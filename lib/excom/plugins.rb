@@ -13,10 +13,11 @@ module Excom
       plugins[name] || fail("extension `#{name}` is not registered")
     end
 
-    def register(name, extension)
+    def register(name, extension, options = {})
       if plugins.key?(name)
         fail ArgumentError, "extension `#{name}` is already registered"
       end
+      extension.singleton_class.send(:define_method, :excom_options) { options }
       plugins[name] = extension
     end
 

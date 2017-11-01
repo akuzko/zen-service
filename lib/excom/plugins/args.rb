@@ -13,6 +13,8 @@ module Excom
     end
 
     def execute(opts_overrides = {})
+      remove_instance_variable('@result') if defined?(@result)
+      remove_instance_variable('@status') if defined?(@status)
       assert_valid_opts!(opts_overrides)
       old_opts, @opts = @opts, @opts.merge(opts_overrides)
       super

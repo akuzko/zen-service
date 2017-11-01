@@ -4,7 +4,6 @@ module Excom
 
     use :executable
     use :args
-    use :one_time_execute, prepend: true
 
     def self.call(*args)
       new(*args).execute

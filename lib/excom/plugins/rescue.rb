@@ -9,7 +9,7 @@ module Excom
       super
     rescue StandardError => error
       @error = error
-      @result = nil
+      @result = @executed = nil
       @status = :error
       raise error unless rezcue
       self

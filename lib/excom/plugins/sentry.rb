@@ -10,7 +10,7 @@ module Excom
       command_class._sentry_class = klass if klass
     end
 
-    def execute
+    def execute(*)
       reason = why_cant(:execute)
 
       return super if reason.nil?

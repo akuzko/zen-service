@@ -1,9 +1,10 @@
 module Excom
   module Plugins::Pluggable
-    def use(name, prepend: false, **opts)
+    def use(name, **opts)
       extension = Plugins.fetch(name)
 
-      send(prepend ? :prepend : :include, extension)
+      method = extension.excom_options[:use_with] || :include
+      send(method, extension)
 
       if extension.const_defined?('ClassMethods')
         extend extension::ClassMethods

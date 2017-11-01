@@ -6,6 +6,7 @@ require "excom"
 class Command < Excom::Command
   use :sentry, class: 'MySentry'
   use :assertions
+  use :caching
 
   args :foo
   opts :bar, :baz

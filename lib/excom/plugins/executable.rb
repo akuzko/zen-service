@@ -2,19 +2,32 @@ module Excom
   module Plugins::Executable
     Plugins.register :executable, self
 
+    UNDEFINED = :__EXCOM_UNDEFINED__
+    private_constant :UNDEFINED
+
+    def initialize(*)
+      @executed = false
+      super
+    end
+
     def execute(*, &block)
       rezult = run(&block)
       result(rezult) unless defined? @result
+      @executed = true
 
       self
+    end
+
+    def executed?
+      @executed
     end
 
     private def run
       success!
     end
 
-    def result(obj = nil)
-      return @result if obj.nil?
+    def result(obj = UNDEFINED)
+      return @result if obj == UNDEFINED
 
       case obj
       when Hash
@@ -29,8 +42,8 @@ module Excom
       end
     end
 
-    def status(status = nil)
-      return @status = status unless status.nil?
+    def status(status = UNDEFINED)
+      return @status = status unless status == UNDEFINED
 
       @status
     end
@@ -51,10 +64,6 @@ module Excom
     private def failure!(status = fail_with)
       @status = status
       @result = false
-    end
-
-    private def assert
-      fail! unless yield
     end
 
     protected def fail_with
