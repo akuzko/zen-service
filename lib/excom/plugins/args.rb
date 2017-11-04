@@ -12,14 +12,26 @@ module Excom
       @opts = opts
     end
 
-    def execute(opts_overrides = {})
-      remove_instance_variable('@result') if defined?(@result)
-      remove_instance_variable('@status') if defined?(@status)
-      assert_valid_opts!(opts_overrides)
-      old_opts, @opts = @opts, @opts.merge(opts_overrides)
+    def initialize_clone(*)
       super
-    ensure
-      @opts = old_opts
+      @args = @args.dup
+      @opts = @opts.dup
+    end
+
+    def with_args(*args)
+      clone.tap{ |copy| copy.args.replace(args) }
+    end
+
+    def with_opts(opts)
+      clone.tap{ |copy| copy.opts.merge!(opts) }
+    end
+
+    protected def opts
+      @opts
+    end
+
+    protected def args
+      @args
     end
 
     private def assert_valid_args!(actual)

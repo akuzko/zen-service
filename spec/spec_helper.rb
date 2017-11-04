@@ -8,6 +8,15 @@ module SpecHelper
     def Kommand(&block)
       let(:kommand_class) { Class.new(Excom::Command, &block) }
     end
+
+    def Sentry(&block)
+      before do
+        Object.send(:remove_const, :SpecSentry) if defined? SpecSentry
+
+        sentry = Class.new(Excom::Sentry, &block)
+        Object.const_set(:SpecSentry, sentry)
+      end
+    end
   end
 
   module ExampleMethods

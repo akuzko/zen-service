@@ -37,7 +37,9 @@ module Excom
 
       def sentry_class
         if _sentry_class.is_a?(String)
-          _sentry_class.split('::').reduce(Object){ |obj, name| obj.const_get(name) }
+          names = _sentry_class.split('::')
+          names.shift if names.first.empty?
+          names.reduce(Object){ |obj, name| obj.const_get(name) }
         else
           _sentry_class
         end

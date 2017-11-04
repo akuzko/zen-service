@@ -10,7 +10,12 @@ module Excom
       super
     end
 
+    def initialize_clone(*)
+      clear_execution_state!
+    end
+
     def execute(*, &block)
+      clear_execution_state!
       rezult = run(&block)
       result(rezult) unless defined? @result
       @executed = true
@@ -26,6 +31,12 @@ module Excom
       success!
     end
 
+    private def clear_execution_state!
+      @executed = false
+      remove_instance_variable('@result') if defined?(@result)
+      remove_instance_variable('@status') if defined?(@status)
+    end
+
     def result(obj = UNDEFINED)
       return @result if obj == UNDEFINED
 
@@ -37,7 +48,7 @@ module Excom
 
         @status, @result = obj.first
       else
-        @status = obj ? :success : fail_with
+        @status = obj ? :success : fail_with unless defined?(@status)
         @result = obj
       end
     end
@@ -63,7 +74,6 @@ module Excom
 
     private def failure!(status = fail_with)
       @status = status
-      @result = false
     end
 
     protected def fail_with

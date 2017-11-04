@@ -21,10 +21,10 @@ module Excom
         @sentinels ||= []
       end
 
-      attr_reader :service
+      attr_reader :command
 
-      def initialize(service)
-        @service = service
+      def initialize(command)
+        @command = command
       end
 
       def denial_reason(action)
@@ -53,7 +53,7 @@ module Excom
 
       private def sentinels
         @sentinels ||= self.class.sentinels.map do |klass|
-          klass.new(service)
+          klass.new(command)
         end
       end
 

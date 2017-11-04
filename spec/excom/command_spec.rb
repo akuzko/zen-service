@@ -29,6 +29,37 @@ RSpec.describe Excom::Command do
         expect{ Kommand(paw: 'wow') }.to raise_error(ArgumentError)
       end
     end
+
+    describe '#with_args' do
+      let(:command) { Kommand(1) }
+
+      it 'generates a new command with replaced args' do
+        args_command = command.with_args(2, 3)
+        expect(command.foo).to eq 1
+        expect(args_command.foo).to eq 2
+        expect(args_command.bar).to eq 3
+      end
+
+      it 'clears execution flags' do
+        command.execute
+        expect(command.with_args(2, 3)).not_to be_executed
+      end
+    end
+
+    describe '#with_opts' do
+      let(:command) { Kommand(baz: 1) }
+
+      it 'generates a new command with merged opts' do
+        args_command = command.with_opts(bak: 2)
+        expect(args_command.baz).to eq 1
+        expect(args_command.bak).to eq 2
+      end
+
+      it 'clears execution flags' do
+        command.execute
+        expect(command.with_opts(bak: 2)).not_to be_executed
+      end
+    end
   end
 
   describe 'execution' do
@@ -123,21 +154,17 @@ RSpec.describe Excom::Command do
       end
     end
 
-    describe 'opts override' do
+    describe '#status' do
       Kommand do
-        opts :foo
-
         def run
-          foo * 2
+          status :ok
         end
       end
 
-      let(:command) { Kommand(foo: 2) }
+      let(:command) { Kommand().execute }
 
-      it 'allows to override initialization opts upon execution' do
-        expect(command.execute.result).to eq 4
-        expect(command.execute(foo: 4).result).to eq 8
-        expect(command.foo).to eq 2
+      it 'assigns status' do
+        expect(command.status).to eq :ok
       end
     end
   end

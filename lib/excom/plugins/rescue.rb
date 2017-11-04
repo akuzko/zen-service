@@ -8,8 +8,8 @@ module Excom
       rezcue = opts.delete(:rescue)
       super
     rescue StandardError => error
+      clear_execution_state!
       @error = error
-      @result = @executed = nil
       @status = :error
       raise error unless rezcue
       self
