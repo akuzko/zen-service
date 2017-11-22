@@ -3,7 +3,7 @@ module Excom
     Plugins.register :args, self
 
     def initialize(*args)
-      opts = args.last.is_a?(Hash) ? args.pop : {}
+      args, opts = resolve_args!(args)
 
       assert_valid_args!(args)
       assert_valid_opts!(opts)
@@ -34,6 +34,22 @@ module Excom
       @args
     end
 
+    private def resolve_args!(args)
+      opts = args.last.is_a?(Hash) ? args.pop : {}
+
+      if args.length < self.class.args_list.length
+        rest = opts
+        opts = self.class.opts_list.each_with_object({}) do |key, ops|
+          ops[key] = rest[key]
+          rest.delete(key)
+        end
+
+        args.push(rest) unless rest.empty?
+      end
+
+      return args, opts
+    end
+
     private def assert_valid_args!(actual)
       allowed = self.class.args_list.length
 
@@ -51,11 +67,22 @@ module Excom
     end
 
     module ClassMethods
+      def inherited(command_class)
+        command_class.const_set(:ArgMethods, Module.new)
+        command_class.send(:include, command_class::ArgMethods)
+        command_class.args_list.replace args_list.dup
+        command_class.opts_list.replace opts_list.dup
+      end
+
+      def arg_methods
+        const_get(:ArgMethods)
+      end
+
       def args(*argz)
         args_list.concat(argz)
 
         argz.each_with_index do |name, i|
-          define_method(name){ @args[i] }
+          arg_methods.send(:define_method, name){ @args[i] }
         end
       end
 
@@ -63,7 +90,7 @@ module Excom
         opts_list.concat(optz)
 
         optz.each do |name|
-          define_method(name){ @opts[name] }
+          arg_methods.send(:define_method, name){ @opts[name] }
         end
       end
 

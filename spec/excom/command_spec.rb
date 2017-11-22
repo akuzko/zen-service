@@ -7,6 +7,32 @@ RSpec.describe Excom::Command do
       opts :baz, :bak
     end
 
+    describe 'inheritance' do
+      let(:inherited_kommand) do
+        Class.new(kommand_class) do
+          args :foobar
+          opts :bazbak
+        end
+      end
+
+      it 'inherits args and opts list' do
+        expect(kommand_class.args_list).to eq [:foo, :bar]
+        expect(kommand_class.opts_list).to eq [:baz, :bak]
+        expect(inherited_kommand.args_list).to eq [:foo, :bar, :foobar]
+        expect(inherited_kommand.opts_list).to eq [:baz, :bak, :bazbak]
+      end
+
+      specify 'reader helpers' do
+        base_command = kommand_class.new
+        inherited_command = inherited_kommand.new
+
+        expect(base_command).not_to respond_to :foobar
+        expect(base_command).not_to respond_to :bazbak
+        expect(inherited_command).to respond_to :foobar
+        expect(inherited_command).to respond_to :bazbak
+      end
+    end
+
     context 'when correctly initialized' do
       it 'sets command args and opts' do
         command = Kommand(1, baz: 2)
@@ -26,7 +52,16 @@ RSpec.describe Excom::Command do
 
     context 'when invalid opts' do
       it 'fails with an error' do
-        expect{ Kommand(paw: 'wow') }.to raise_error(ArgumentError)
+        expect{ Kommand(1, 2, paw: 'wow') }.to raise_error(ArgumentError)
+      end
+    end
+
+    describe 'opts resolution' do
+      it 'sends unkown options to args, if there is place for it' do
+        command = Kommand(1, baz: 2, paw: 'wow')
+        expect(command.foo).to eq 1
+        expect(command.bar).to eq(paw: 'wow')
+        expect(command.baz).to eq 2
       end
     end
 
@@ -165,6 +200,26 @@ RSpec.describe Excom::Command do
 
       it 'assigns status' do
         expect(command.status).to eq :ok
+      end
+    end
+
+    describe '.call and .[] helpers' do
+      Kommand do
+        args :arg
+
+        def run
+          arg
+        end
+      end
+
+      specify '.call' do
+        command = kommand_class.(:foo)
+        expect(command).to be_executed
+      end
+
+      specify '.[]' do
+        result = kommand_class[:foo]
+        expect(result).to eq :foo
       end
     end
   end

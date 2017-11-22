@@ -11,6 +11,10 @@ class Command < Excom::Command
   args :foo
   opts :bar, :baz
 
+  def foo
+    super || 6
+  end
+
   def run
     result success: foo * 2
     assert { foo > bar }
@@ -21,12 +25,12 @@ class MySentry < Excom::Sentry
   deny_with :unauthorized
 
   def execute?
-    service.foo != 5
+    command.foo != 5
   end
 
   deny_with :unprocessable_entity do
     def bar?
-      service.bar && service.bar > 0
+      command.bar && command.bar > 0
     end
   end
 end

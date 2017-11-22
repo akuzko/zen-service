@@ -4,9 +4,5 @@ module Excom
 
     use :executable
     use :args
-
-    def self.call(*args)
-      new(*args).execute
-    end
   end
 end

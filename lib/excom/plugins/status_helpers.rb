@@ -7,7 +7,7 @@ module Excom
 
       helpers = Module.new do
         (success + failure).each do |name|
-          define_method(name) do |result|
+          define_method(name) do |result = nil|
             @status = name
             @result = result
           end

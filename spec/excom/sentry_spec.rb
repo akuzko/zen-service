@@ -15,6 +15,17 @@ RSpec.describe 'Excom::Plugins::Sentry' do
   let(:user) { {id: 1} }
   let(:post) { {author_id: 1, outdated: false} }
 
+  describe 'inheritance' do
+    Sentry do
+      allow :execute
+    end
+
+    it 'inherits sentry class' do
+      inherited_kommand = Class.new(kommand_class)
+      expect(inherited_kommand.sentry_class).to be SpecSentry
+    end
+  end
+
   describe 'simple case' do
     Sentry do
       extend Forwardable
@@ -93,6 +104,30 @@ RSpec.describe 'Excom::Plugins::Sentry' do
           'publish' => true
         )
       end
+    end
+  end
+
+  describe 'helper methods' do
+    Sentry do
+      allow :execute
+      deny :delete
+
+      deny :archive, with: :unauthorized
+
+      deny_with :unprocessable_entity do
+        deny :update
+      end
+    end
+
+    it 'assigns permissions properly' do
+      expect(command.can?(:execute)).to be true
+      expect(command.can?(:delete)).to be false
+      expect(command.can?(:archive)).to be false
+      expect(command.can?(:update)).to be false
+
+      expect(command.why_cant(:delete)).to be :denied
+      expect(command.why_cant(:archive)).to be :unauthorized
+      expect(command.why_cant(:update)).to be :unprocessable_entity
     end
   end
 end

@@ -16,8 +16,8 @@ module Excom
 
     def execute(*, &block)
       clear_execution_state!
-      rezult = run(&block)
-      result(rezult) unless defined? @result
+      result = run(&block)
+      result_with(result) unless defined? @result
       @executed = true
 
       self
@@ -48,9 +48,13 @@ module Excom
 
         @status, @result = obj.first
       else
-        @status = obj ? :success : fail_with unless defined?(@status)
-        @result = obj
+        result_with(obj)
       end
+    end
+
+    private def result_with(obj)
+      @status = obj ? :success : fail_with unless defined?(@status)
+      @result = obj
     end
 
     def status(status = UNDEFINED)
@@ -90,6 +94,14 @@ module Excom
         return @fail_with || :failure if status.nil?
 
         @fail_with = status
+      end
+
+      def call(*args)
+        new(*args).execute
+      end
+
+      def [](*args)
+        call(*args).result
       end
     end
   end

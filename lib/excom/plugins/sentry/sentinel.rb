@@ -17,6 +17,20 @@ module Excom
         @denial_reason ||= :denied
       end
 
+      def self.allow(*permissions)
+        permissions.each do |name|
+          define_method("#{name}?") { true }
+        end
+      end
+
+      def self.deny(*permissions, with: nil)
+        return deny_with(with){ deny(*permissions) } unless with.nil?
+
+        permissions.each do |name|
+          define_method("#{name}?") { false }
+        end
+      end
+
       def self.sentinels
         @sentinels ||= []
       end
