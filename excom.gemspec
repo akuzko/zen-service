@@ -9,11 +9,12 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Artem Kuzko"]
   spec.email         = ["a.kuzko@gmail.com"]
 
-  spec.summary       = %q{Flexible business logic command (service) builder}
-  spec.description   = %q{Excom commands allow you to organize business logic in
-    executable services that can be enhanced with various and custom plugins}
+  spec.summary       = %q{Flexible and highly extensible Commands (Service Objects) for business logic}
+  spec.description   = %q{Flexible and highly extensible Commands (Service Objects) for business logic}
   spec.homepage      = "https://github.com/akuzko/excom"
   spec.license       = "MIT"
+
+  spec.required_ruby_version = '>= 2.2.0'
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"

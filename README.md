@@ -1,6 +1,8 @@
 # Excom
 
-Commands (Service Objects) for your business logic that can cover all your needs.
+Flexible and highly extensible Commands (Service Objects) for business logic.
+
+[![build status](https://secure.travis-ci.org/akuzko/excom.png)](http://travis-ci.org/akuzko/excom)
 
 ## Installation
 
