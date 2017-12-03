@@ -3,7 +3,7 @@ module Excom
     Plugins.register :status_helpers, self
 
     def self.used(klass, success: [], failure: [])
-      klass.success_aliases = success
+      klass.alias_success(*success)
 
       helpers = Module.new do
         (success + failure).each do |name|
@@ -20,12 +20,6 @@ module Excom
 
     def success?
       super || self.class.success_aliases.include?(status)
-    end
-
-    module ClassMethods
-      def success_aliases=(aliases)
-        singleton_class.send(:define_method, :success_aliases) { aliases }
-      end
     end
   end
 end

@@ -33,8 +33,8 @@ module Excom
 
     private def clear_execution_state!
       @executed = false
-      remove_instance_variable('@result') if defined?(@result)
-      remove_instance_variable('@status') if defined?(@status)
+      remove_instance_variable('@result'.freeze) if defined?(@result)
+      remove_instance_variable('@status'.freeze) if defined?(@status)
     end
 
     def result(obj = UNDEFINED)
@@ -64,7 +64,7 @@ module Excom
     end
 
     def success?
-      status == :success
+      status == :success || self.class.success_aliases.include?(status)
     end
 
     def failure?
@@ -85,9 +85,12 @@ module Excom
     end
 
     module ClassMethods
-      def method_added(name)
-        private :run if name == :run
-        super if defined? super
+      def call(*args)
+        new(*args).execute
+      end
+
+      def [](*args)
+        call(*args).result
       end
 
       def fail_with(status = nil)
@@ -96,12 +99,17 @@ module Excom
         @fail_with = status
       end
 
-      def call(*args)
-        new(*args).execute
+      def success_aliases
+        []
       end
 
-      def [](*args)
-        call(*args).result
+      def alias_success(*aliases)
+        singleton_class.send(:define_method, :success_aliases) { super() + aliases }
+      end
+
+      def method_added(name)
+        private :run if name == :run
+        super if defined? super
       end
     end
   end

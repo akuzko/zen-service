@@ -11,12 +11,14 @@ class Command < Excom::Command
   args :foo
   opts :bar, :baz
 
+  alias_success :ok
+
   def foo
     super || 6
   end
 
   def run
-    result success: foo * 2
+    result ok: foo * 2
     assert { foo > bar }
   end
 end

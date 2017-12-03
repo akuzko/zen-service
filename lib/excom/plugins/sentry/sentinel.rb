@@ -1,11 +1,11 @@
 module Excom
   module Plugins::Sentry
     class Sentinel
-      def self.deny_with(status)
-        return self.denial_reason = status unless block_given?
+      def self.deny_with(reason)
+        return self.denial_reason = reason unless block_given?
 
         klass = Class.new(self, &Proc.new)
-        klass.denial_reason = status
+        klass.denial_reason = reason
         sentinels << klass
       end
 
@@ -17,16 +17,16 @@ module Excom
         @denial_reason ||= :denied
       end
 
-      def self.allow(*permissions)
-        permissions.each do |name|
+      def self.allow(*actions)
+        actions.each do |name|
           define_method("#{name}?") { true }
         end
       end
 
-      def self.deny(*permissions, with: nil)
-        return deny_with(with){ deny(*permissions) } unless with.nil?
+      def self.deny(*actions, with: nil)
+        return deny_with(with){ deny(*actions) } unless with.nil?
 
-        permissions.each do |name|
+        actions.each do |name|
           define_method("#{name}?") { false }
         end
       end
@@ -51,13 +51,24 @@ module Excom
         Proc === reason ? instance_exec(&reason) : reason
       end
 
-      def as_json
+      def sentry(klass)
+        unless Class === klass
+          klass_name = self.class.name.sub(/[^:]+\Z/, ''.freeze) + "_#{klass}".gsub!(/(_([a-z]))/){ $2.upcase } + 'Sentry'.freeze
+          klass = klass_name.respond_to?(:constantize) ?
+            klass_name.constantize :
+            klass_name.split('::'.freeze).reduce(Object){ |obj, name| obj.const_get(name) }
+        end
+
+        klass.new(command)
+      end
+
+      def to_hash
         sentries.reduce({}) do |result, sentry|
           partial = sentry.public_methods(false).grep(/\?$/).each_with_object({}) do |method, hash|
             hash[method.to_s[0...-1]] = !!sentry.public_send(method)
           end
 
-          result.merge(partial){ |_k, old, new| old && new }
+          result.merge!(partial){ |_k, old, new| old && new }
         end
       end
 

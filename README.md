@@ -59,16 +59,14 @@ end
 
 However, even this basic example can be highly optimized by using Excom extensions and helper methods.
 
-### Command Extensions (Plugins)
+### Command arguments and options
 
-Excom is built with extensions in mind. Even core functionality is organized in plugins that are
-used in base `Excom::Command` class.
+Read full version on [wiki](https://github.com/akuzko/excom/wiki#instantiating-command-with-arguments-and-options).
 
-#### `:args` (built-in)
-
-Adds ability for command to accept _arguments_ and _options_ . Also adds reader helper methods.
-All arguments and options are optional during command initialization. However, you cannot
-pass more arguments to command or options that were not declared with `opts` method.
+Excom commands can be initialized with _arguments_ and _options_ (named arguments). To specify list
+of available arguments and options, use `args` and `opts` class methods. All arguments and options
+are optional during command initialization. However, you cannot pass more arguments to command or
+options that were not declared with `opts` method.
 
 ```rb
 class MyCommand < Excom::Command
@@ -93,103 +91,53 @@ c2.foo # => 1
 c2.bar # => 2
 ```
 
-#### `:executable` (built-in)
+### Command Execution
 
-This plugin is responsible for command execution logic, it defines methods that allow to execute command,
-read and write it's result and status, and some helper methods. At the core of each command's execution
-lies `run` method. You can use `status` and/or `result` methods to set execution status and result. If none
-were used, result and status will be set based on `run` method's return value:
+Read full version on [wiki](https://github.com/akuzko/excom/wiki#command-execution).
 
-- set both status and result explicitly:
+At the core of each command's execution lies `run` method. You can use `status` and/or
+`result` methods to set execution status and result. If none were used, result and status
+will be set based on `run` method's return value.
+
+Example:
 
 ```rb
 class MyCommand < Excom::Command
+  alias_success :ok
+  args :foo
+
   def run
-    result ok: 5
+    if foo > 2
+      result ok: foo * 2
+    else
+      result failure: -1
+    end
   end
 end
 
-command = MyCommand.new.execute
+command = MyCommand.new(3)
+command.execute.success? # => true
 command.status # => :ok
-command.result # => 5
+command.result # => 6
 ```
 
-- set only result:
+### Core API
 
-```rb
-  def run
-    result 5
-  end
-# ...
-command.status # => :success
-command.result # => 5
-```
+Please read about core API and available class and instance methods on [wiki](https://github.com/akuzko/excom/wiki#core-api)
 
-- if result has falsy value, execution status will be considered as failure:
+### Command Extensions (Plugins)
 
-```rb
-  def run
-    result nil
-  end
-# ...
-command.status # => :failure
-command.result # => nil
-```
+Excom is built with extensions in mind. Even core functionality is organized in plugins that are
+used in base `Excom::Command` class. Bellow you can see a list of plugins with some description
+and examples that are shipped with `excom`:
 
-- set only status
-
-```rb
-  def run
-    status :success
-  end
-# ...
-command.status # => :success
-command.result # => nil
-```
-
-- if no `status` nor `result` were called, those values are set based on `run` return value:
-
-```rb
-  def run
-    5
-  end
-# ...
-command.status # => :success
-command.result # => 5
-```
-
-Keep in mind that by default, unless any plugins, such as `:status_helpers` (see bellow) are used,
-any non-`:success` status will be considered as failed, i.e.:
-
-```rb
-command.status # => :ok
-command.success? # => false
-```
-
-##### Important `ClassMethods` Helpers
-
-- `.call(*args)` - instantiates a service with `args` and executes it immediately:
-
-```rb
-command = MyCommand.(:foo, bar: :baz) # => is the same as:
-# command = MyCommand.new(:foo, bar: :baz).execute
-```
-
-- `[](*args)` - instantiates a service with `args`, executes it and returns it's execution result:
-
-```rb
-result = MyCommand[:foo, bar: :baz] # => is the same as
-# result = MyCommand.new(:foo, bar: :baz).execute.result
-```
-
-#### `:status_helpers`
-
-Allows you to define status aliases and helper methods named after them to immediately
-and more explicitly assign both status and result at the same time:
+- [`:status_helpers`](https://github.com/akuzko/excom/wiki/Plugins#status-helpers) - Allows you to
+define status aliases and helper methods named after them to immediately and more explicitly assign
+both status and result at the same time:
 
 ```rb
 class Todos::Update
-  use :helper_methods, success: [:ok], failure: [:unprocessable_entity]
+  use :status_helpers, success: [:ok], failure: [:unprocessable_entity]
   args :todo, :params
 
   def run
@@ -205,28 +153,18 @@ command = Todos::Update.(todo, todo_params)
 # in case params were valid you will have:
 command.success? # => true
 command.status # => :ok
-command.result # => Todo object
+command.result # => {'id' => 1, ...}
 ```
 
-To use globally:
-
-```rb
-Excom::Command.use :status_helpers,
-  success: [:ok, :no_content],
-  failure: [:unauthorized, :unprocessable_entity]
-```
-
-#### `:context`
-
-Allows you to set an execution context for a block that will be available to any command that uses this plugin
-via `context` method. To provide a context, use "global" `Excom.with_context` method:
+- [`:context`](https://github.com/akuzko/excom/wiki/Plugins#context) - Allows you to set an execution
+context for a block that will be available to any command that uses this plugin via `context` method.
 
 ```rb
 # application_controller.rb
 around_action :with_context
 
 def with_context
-  Excom.with_context(user: current_user) do
+  Excom.with_context(current_user: current_user) do
     yield
   end
 end
@@ -238,37 +176,16 @@ class Posts::Archive < Excom::Command
   args :post
 
   def run
-    post.update(archived: true, archived_by: context[:user])
+    post.update(archived: true, archived_by: context[:current_user])
   end
 end
 ```
 
-you can also set a local context for instantiated command:
-
-```
-command = Posts::Archive.new(post)
-command.context # => nil
-command_with_user = command.with_context(user: admin)
-command_with_user.context # => {:user => <User record>}
-# previous command remains untouched:
-command.context # => nil
-```
-
-To use globally:
-
-```rb
-Excom::Command.use :context
-```
-
-It is generally recommended to use [`Hashie::Mash`](https://github.com/intridea/hashie#mash) object as
-context for convenient access to it's content.
-
-#### `:sentry`
-
-This plugin allows you to provide Sentry classes for commands that use this plugin. Each Sentry class hosts
-logic responsible for allowing or denying corresponding service's execution or related checks. Much like
-[pundit](https://github.com/elabs/pundit) Policies, but more. Where pundit governs only authorization logic,
-Excom's Sentries can deny execution with any reason you find appropriate. For example:
+- [`:sentry`](https://github.com/akuzko/excom/wiki/Plugins#sentry) - Allows you to provide Sentry classes
+for commands that use this plugin. Each Sentry class hosts logic responsible for allowing or denying
+corresponding command's execution or related checks. Much like [pundit](https://github.com/elabs/pundit)
+Policies, but more. Where pundit governs only authorization logic, Excom's Sentries can deny execution
+with any reason you find appropriate.
 
 ```rb
 class Posts::Destroy < Excom::Command
@@ -279,19 +196,15 @@ class Posts::Destroy < Excom::Command
   def run
     post.destroy
   end
-
-  def user
-    context[:user]
-  end
 end
 
 class Posts::DestroySentry < Excom::Sentry
-  delegate :post, :user, to: :command
+  delegate :post, :context, to: :command
   deny_with :unauthorized
 
   def execute?
     # only author can destroy a post
-    post.author_id == user.id
+    post.author_id == context[:current_user].id
   end
 
   deny_with :unprocessable_entity do
@@ -301,33 +214,16 @@ class Posts::DestroySentry < Excom::Sentry
     end
   end
 end
-
-command = Posts::Destroy.new(post)
-
-# if post doesn't belong to a user in context you will get:
-command.execute.success? # => false
-command.status # => :unauthorized
-
-# if post is too old you will get:
-command.execute.success? # => false
-command.status # => :unprocessable_entity
 ```
 
-Your command object in this case also gets helper methods according to sentry definitions, for example:
+- [`:assertions`](https://github.com/akuzko/excom/wiki/Plugins#assertions) - Provides `assert` method that
+can be used for different logic checks during command execution.
 
-```rb
-command.can?(:execute) # => false
-command.why_cant(:execute) # => :unauthorized
-```
+- [`:caching`](https://github.com/akuzko/excom/wiki/Plugins#caching) - Simple plugin that will prevent
+re-execution of command if it already has been executed, and will immediately return result.
 
-All sentry's public methods ending with `?` can be used for such checks. Also, to get return values for
-all such methods at once, you can use `#as_json` method:
-
-```rb
-command.sentry.as_json # => {:execute => false}
-```
-
-It is highly recommended to use this plugin together with `:context` plugin.
+- [`:rescue`](https://github.com/akuzko/excom/wiki/Plugins#rescue) - Provides `:rescue` execution option.
+If set to `true`, any error occurred during command execution will not be raised outside.
 
 ## Development
 

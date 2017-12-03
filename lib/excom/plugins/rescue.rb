@@ -4,6 +4,11 @@ module Excom
 
     attr_reader :error
 
+    def initialize_clone(*)
+      remove_instance_variable('@error') if defined?(@error)
+      super
+    end
+
     def execute(**opts)
       rezcue = opts.delete(:rescue)
       super

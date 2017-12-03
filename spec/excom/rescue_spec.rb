@@ -19,6 +19,14 @@ RSpec.describe 'Excom::Plugins::Rescue' do
       expect(command.status).to eq :error
       expect(command.error.message).to eq 'foo'
     end
+
+    describe 'clearing :error for clone' do
+      it 'clears error' do
+        command.execute(rescue: true)
+        cloned = command.with_args
+        expect(cloned.error).to be nil
+      end
+    end
   end
 
   context 'when resuce option is not used' do

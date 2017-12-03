@@ -46,7 +46,7 @@ module Excom
         if _sentry_class.is_a?(String)
           return _sentry_class.constantize if _sentry_class.respond_to?(:constantize)
 
-          names = _sentry_class.split('::')
+          names = _sentry_class.split('::'.freeze)
           names.shift if names.first.empty?
           names.reduce(Object){ |obj, name| obj.const_get(name) }
         else

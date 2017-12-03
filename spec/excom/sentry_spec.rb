@@ -95,11 +95,11 @@ RSpec.describe 'Excom::Plugins::Sentry' do
       end
     end
 
-    describe '#as_json' do
+    describe '#to_hash' do
       let(:post) { {author_id: 1, outdated: true} }
 
       it 'returns a permissions hash' do
-        expect(command.sentry.as_json).to eq(
+        expect(command.sentry.to_hash).to eq(
           'execute' => false,
           'publish' => true
         )
@@ -128,6 +128,32 @@ RSpec.describe 'Excom::Plugins::Sentry' do
       expect(command.why_cant(:delete)).to be :denied
       expect(command.why_cant(:archive)).to be :unauthorized
       expect(command.why_cant(:update)).to be :unprocessable_entity
+    end
+
+    describe '#sentry' do
+      class OtherSpecSentry < Excom::Sentry
+        deny :execute
+      end
+
+      context 'when klass is used' do
+        Sentry do
+          def other?
+            sentry(OtherSpecSentry).execute?
+          end
+        end
+
+        specify { expect(command.can?(:other)).to be false }
+      end
+
+      context 'when symbol is used' do
+        Sentry do
+          def other?
+            sentry(:other_spec).execute?
+          end
+        end
+
+        specify { expect(command.can?(:other)).to be false }
+      end
     end
   end
 end

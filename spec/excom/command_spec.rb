@@ -177,6 +177,22 @@ RSpec.describe Excom::Command do
       its(:status) { is_expected.to eq :total_failure }
     end
 
+    describe '.alias_success' do
+      Kommand do
+        alias_success :ok
+
+        def run
+          result ok: 5
+        end
+      end
+
+      subject(:command) { Kommand().execute }
+
+      it { is_expected.to be_success }
+      its(:status) { is_expected.to eq :ok }
+      its(:result) { is_expected.to eq 5 }
+    end
+
     describe '#run' do
       Kommand do
         def run
