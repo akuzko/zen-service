@@ -2,28 +2,26 @@ module Excom
   module Plugins::Context
     Plugins.register :context, self
 
-    def initialize(*)
-      @local_context = {}
-      super
-    end
-
-    def initialize_clone(*)
-      @local_context = @local_context.dup
-      super
-    end
+    attr_accessor :local_context
+    protected :local_context, :local_context=
 
     def context
       global_context = ::Excom.context
+      return global_context if local_context.nil?
+
       global_context.respond_to?(:merge) ?
-        global_context.merge(local_context) :
+        (global_context.merge(local_context) rescue local_context) :
         local_context
     end
 
     def with_context(ctx)
-      clone.tap{ |copy| copy.local_context.merge!(ctx) }
+      clone.tap do |copy|
+        copy.local_context =
+          copy.local_context.respond_to?(:merge) ? copy.local_context.merge(ctx) : ctx
+      end
     end
 
-    protected def local_context
+    def local_context
       @local_context
     end
 
@@ -37,7 +35,7 @@ module Excom
       end
 
       def context
-        Thread.current[:excom_context] || {}
+        Thread.current[:excom_context]
       end
     end
   end

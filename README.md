@@ -3,6 +3,7 @@
 Flexible and highly extensible Commands (Service Objects) for business logic.
 
 [![build status](https://secure.travis-ci.org/akuzko/excom.png)](http://travis-ci.org/akuzko/excom)
+[![github release](https://img.shields.io/github/release/akuzko/excom.svg)](https://github.com/akuzko/excom/releases)
 
 ## Installation
 
@@ -128,6 +129,8 @@ command.result # => 6
 Please read about core API and available class and instance methods on [wiki](https://github.com/akuzko/excom/wiki#core-api)
 
 ### Command Extensions (Plugins)
+
+Read full version on [wiki](https://github.com/akuzko/excom/wiki/Plugins).
 
 Excom is built with extensions in mind. Even core functionality is organized in plugins that are
 used in base `Excom::Command` class. Bellow you can see a list of plugins with some description
