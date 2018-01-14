@@ -238,5 +238,35 @@ RSpec.describe Excom::Command do
         expect(result).to eq :foo
       end
     end
+
+    describe 'command execution delegation' do
+      Kommand do
+        args :arg
+        alias_success :ok
+
+        def run
+          result ok: arg * 2
+        end
+      end
+
+      let(:other_kommand_class) do
+        klass = kommand_class
+
+        other_kommand_class = Class.new(Excom::Command) do
+          args :arg
+
+          define_method(:run) do
+            ~klass.(arg)
+          end
+        end
+      end
+
+      specify 'both :status and :result can be delegated via ~@ method' do
+        other_kommand = other_kommand_class.(5)
+
+        expect(other_kommand.status).to be :ok
+        expect(other_kommand.result).to be 10
+      end
+    end
   end
 end

@@ -5,6 +5,8 @@ module Excom
     UNDEFINED = :__EXCOM_UNDEFINED__
     private_constant :UNDEFINED
 
+    Result = Struct.new(:status, :result)
+
     def initialize(*)
       @executed = false
       super
@@ -25,6 +27,10 @@ module Excom
 
     def executed?
       @executed
+    end
+
+    def ~@
+      Result.new(status, result)
     end
 
     private def run
@@ -53,6 +59,11 @@ module Excom
     end
 
     private def result_with(obj)
+      if Result === obj
+        @status, @result = obj.status, obj.result
+        return @result
+      end
+
       @status = obj ? :success : fail_with unless defined?(@status)
       @result = obj
     end
