@@ -32,6 +32,10 @@ module Excom
       @sentry ||= self.class.sentry_class.new(self)
     end
 
+    def sentry_hash
+      sentry.to_hash
+    end
+
     module ClassMethods
       attr_writer :_sentry_class
 
@@ -42,20 +46,37 @@ module Excom
 
       def sentry_class(klass = nil)
         return self._sentry_class = klass unless klass.nil?
+        return @sentry_class if defined? @sentry_class
 
-        if _sentry_class.is_a?(String)
-          return _sentry_class.constantize if _sentry_class.respond_to?(:constantize)
+        @sentry_class =
+          if _sentry_class.is_a?(String)
+            return _sentry_class.constantize if _sentry_class.respond_to?(:constantize)
 
-          names = _sentry_class.split('::'.freeze)
-          names.shift if names.first.empty?
-          names.reduce(Object){ |obj, name| obj.const_get(name) }
-        else
-          _sentry_class
-        end
+            names = _sentry_class.split('::'.freeze)
+            names.shift if names.first.empty?
+            names.reduce(Object){ |obj, name| obj.const_get(name) }
+          else
+            _sentry_class
+          end
+
+        @sentry_class.command_class = self
+        @sentry_class
       end
 
       def _sentry_class
         @_sentry_class ||= "#{name}Sentry"
+      end
+
+      def sentry(delegate: [], &block)
+        (plugins[:sentry].options[:delegate] ||= []).concat(delegate).uniq!
+
+        if const_defined?(:Sentry)
+          const_get(:Sentry).class_eval(&block)
+        else
+          @_sentry_class = @sentry_class = Class.new(Sentry, &block)
+          @sentry_class.command_class = self
+          const_set(:Sentry, @_sentry_class)
+        end
       end
     end
   end

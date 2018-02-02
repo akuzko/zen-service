@@ -1,6 +1,23 @@
 module Excom
   module Plugins::Sentry
     class Sentinel
+      def self.inherited(sentry_class)
+        return unless self == Sentinel
+
+        sentry_class.denial_reason = denial_reason
+        sentry_class.const_set(:Delegations, Module.new)
+        sentry_class.send(:include, sentry_class::Delegations)
+      end
+
+      def self.command_class=(klass)
+        sentinels.each{ |s| s.command_class = klass }
+        @command_class = klass
+      end
+
+      def self.command_class
+        @command_class
+      end
+
       def self.deny_with(reason)
         return self.denial_reason = reason unless block_given?
 
@@ -35,6 +52,10 @@ module Excom
         @sentinels ||= []
       end
 
+      def self.delegations
+        const_get(:Delegations)
+      end
+
       attr_reader :command
 
       def initialize(command)
@@ -52,13 +73,7 @@ module Excom
       end
 
       def sentry(klass)
-        unless Class === klass
-          klass_name = self.class.name.sub(/[^:]+\Z/, ''.freeze) + "_#{klass}".gsub!(/(_([a-z]))/){ $2.upcase } + 'Sentry'.freeze
-          klass = klass_name.respond_to?(:constantize) ?
-            klass_name.constantize :
-            klass_name.split('::'.freeze).reduce(Object){ |obj, name| obj.const_get(name) }
-        end
-
+        klass = derive_sentry_class(klass) unless Class === klass
         klass.new(command)
       end
 
@@ -82,7 +97,47 @@ module Excom
         end
       end
 
-      def method_missing(name, *)
+      private def derive_sentry_class(klass)
+        constantize(klass, '::Sentry'.freeze)
+      rescue NameError
+        constantize(klass, 'Sentry'.freeze)
+      end
+
+      private def constantize(klass, sentry_name)
+        module_prefix = (inline? ? self.class.command_class.name : self.class.name).sub(/[^:]+\Z/, ''.freeze)
+
+        klass_name = module_prefix + "_#{klass}".gsub!(/(_([a-z]))/){ $2.upcase } + sentry_name
+
+        klass_name.respond_to?(:constantize) ?
+          klass_name.constantize :
+          klass_name.split('::'.freeze).reduce(Object){ |obj, name| obj.const_get(name) }
+      end
+
+      private def inline?
+        self.class.command_class.const_defined?(:Sentry) && self.class.command_class::Sentry == self.class
+      end
+
+      private def define_delegations!
+        delegated_methods = self.class.command_class.arg_methods.instance_methods +
+          Array(self.class.command_class.plugins[:sentry].options[:delegate])
+
+        delegated_methods.each do |name|
+          self.class.delegations.send(:define_method, name) { command.public_send(name) }
+        end
+
+        self.class.instance_variable_set('@delegations_defined'.freeze, true)
+      end
+
+      private def delegations_defined?
+        self.class.instance_variable_get('@delegations_defined'.freeze)
+      end
+
+      def method_missing(name, *args)
+        unless delegations_defined?
+          define_delegations!
+          return send(name, *args) if respond_to?(name)
+        end
+
         if name.to_s.end_with?(??)
           sentinels[1..-1].each do |sentry|
             return sentry.public_send(name) if sentry.respond_to?(name)

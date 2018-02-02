@@ -14,7 +14,16 @@ module Excom
         extension.used(self, **opts)
       end
 
+      plugins[name] = Reflection.new(extension, opts)
+
       extension
     end
+
+    def plugins
+      @plugins ||= {}
+    end
+    alias :extensions :plugins
+
+    Reflection = Struct.new(:extension, :options)
   end
 end

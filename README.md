@@ -186,36 +186,36 @@ class Posts::Archive < Excom::Command
 end
 ```
 
-- [`:sentry`](https://github.com/akuzko/excom/wiki/Plugins#sentry) - Allows you to provide Sentry classes
-for commands that use this plugin. Each Sentry class hosts logic responsible for allowing or denying
-corresponding command's execution or related checks. Much like [pundit](https://github.com/elabs/pundit)
-Policies, but more. Where pundit governs only authorization logic, Excom's Sentries can deny execution
-with any reason you find appropriate.
+- [`:sentry`](https://github.com/akuzko/excom/wiki/Plugins#sentry) - Allows you to define sentry logic that
+will allow or deny command's execution or other related checks. This logic can be defined inline in command
+classes or in dedicated Sentry classes. Much like [pundit](https://github.com/elabs/pundit) Policies, but
+more. Where pundit governs only authorization logic, Excom's Sentries can deny execution with any reason
+you find appropriate.
 
 ```rb
 class Posts::Destroy < Excom::Command
   use :context
   use :sentry
+
   args :post
 
   def run
     post.destroy
   end
-end
 
-class Posts::DestroySentry < Excom::Sentry
-  delegate :post, :context, to: :command
-  deny_with :unauthorized
+  sentry delegate: [:context] do
+    deny_with :unauthorized
 
-  def execute?
-    # only author can destroy a post
-    post.author_id == context[:current_user].id
-  end
-
-  deny_with :unprocessable_entity do
     def execute?
-      # disallow to destroy posts that are older than 1 hour
-      (post.created_at + 1.hour).past?
+      # only author can destroy a post
+      post.author_id == context[:current_user].id
+    end
+
+    deny_with :unprocessable_entity do
+      def execute?
+        # disallow to destroy posts that are older than 1 hour
+        (post.created_at + 1.hour).past?
+      end
     end
   end
 end

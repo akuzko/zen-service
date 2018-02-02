@@ -28,9 +28,6 @@ RSpec.describe 'Excom::Plugins::Sentry' do
 
   describe 'simple case' do
     Sentry do
-      extend Forwardable
-      def_delegators :command, :user, :post
-
       def execute?
         user[:id] == post[:author_id]
       end
@@ -57,9 +54,6 @@ RSpec.describe 'Excom::Plugins::Sentry' do
 
   describe 'advanced usage' do
     Sentry do
-      extend Forwardable
-      def_delegators :command, :user, :post
-
       deny_with :unauthorized do
         def execute?
           user[:id] == post[:author_id]
@@ -102,6 +96,73 @@ RSpec.describe 'Excom::Plugins::Sentry' do
         expect(command.sentry.to_hash).to eq(
           'execute' => false,
           'publish' => true
+        )
+      end
+    end
+  end
+
+  describe 'inline sentry usage' do
+    Kommand do
+      use :sentry
+      opts :user, :post
+
+      def run
+        post[:deleted] = true
+      end
+
+      def foo
+        5
+      end
+
+      sentry delegate: [:foo] do
+        deny_with :unauthorized
+
+        def execute?
+          user[:id] == post[:author_id]
+        end
+
+        def foo?
+          foo > 0
+        end
+
+        alias_method :publish?, :execute?
+
+        deny_with :unprocessable_entity do
+          def execute?
+            !post[:outdated]
+          end
+        end
+      end
+    end
+
+    context 'when denied with first reason' do
+      let(:user) { {id: 2} }
+
+      it 'denies execution with proper reason' do
+        expect(command).not_to receive(:run)
+        expect(command.execute).not_to be_success
+        expect(command.status).to be :unauthorized
+      end
+    end
+
+    context 'when denied with second reason' do
+      let(:post) { {author_id: 1, outdated: true} }
+
+      it 'denies execution with proper reason' do
+        expect(command).not_to receive(:run)
+        expect(command.execute).not_to be_success
+        expect(command.status).to be :unprocessable_entity
+      end
+    end
+
+    describe '#sentry_hash' do
+      let(:post) { {author_id: 1, outdated: true} }
+
+      it 'returns a permissions hash' do
+        expect(command.sentry_hash).to eq(
+          'execute' => false,
+          'publish' => true,
+          'foo'     => true
         )
       end
     end

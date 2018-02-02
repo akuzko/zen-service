@@ -3,10 +3,32 @@
 require "bundler/setup"
 require "excom"
 
-class Command < Excom::Command
+Excom::Sentry.deny_with :unauthorized
+
+class Show < Excom::Command
   use :sentry, class: 'MySentry'
-  use :assertions
   use :caching
+
+  args :foo
+
+  def run
+    {foo: foo}
+  end
+end
+
+class MySentry < Excom::Sentry
+  def execute?
+    foo != 5
+  end
+
+  def save?
+    sentry(:save).execute?
+  end
+end
+
+class Save < Excom::Command
+  use :sentry, delegate: [:threshold]
+  use :assertions
 
   args :foo
   opts :bar, :baz
@@ -21,18 +43,24 @@ class Command < Excom::Command
     result ok: foo * 2
     assert { foo > bar }
   end
-end
 
-class MySentry < Excom::Sentry
-  deny_with :unauthorized
-
-  def execute?
-    command.foo != 5
+  def threshold
+    0
   end
 
-  deny_with :unprocessable_entity do
-    def bar?
-      command.bar && command.bar > 0
+  sentry do
+    def execute?
+      foo != 6
+    end
+
+    deny_with :unprocessable_entity do
+      def execute?
+        foo > 0
+      end
+
+      def bar?
+        bar && bar > threshold
+      end
     end
   end
 end
