@@ -2,9 +2,6 @@ module Excom
   module Plugins::Executable
     Plugins.register :executable, self
 
-    UNDEFINED = :__EXCOM_UNDEFINED__
-    private_constant :UNDEFINED
-
     Result = Struct.new(:status, :result)
 
     def initialize(*)

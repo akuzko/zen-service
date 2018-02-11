@@ -44,8 +44,8 @@ module Excom
         command_class.sentry_class(_sentry_class)
       end
 
-      def sentry_class(klass = nil)
-        return self._sentry_class = klass unless klass.nil?
+      def sentry_class(klass = UNDEFINED)
+        return self._sentry_class = klass unless klass == UNDEFINED
         return @sentry_class if defined? @sentry_class
 
         @sentry_class =

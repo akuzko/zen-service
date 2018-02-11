@@ -14,8 +14,8 @@ module Excom
 
     def initialize_clone(*)
       super
-      @args = @args.dup
-      @opts = @opts.dup
+      @args = @args.dup unless @args.nil?
+      @opts = @opts.dup unless @opts.nil?
     end
 
     def with_args(*args)

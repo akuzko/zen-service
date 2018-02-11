@@ -224,6 +224,9 @@ end
 - [`:assertions`](https://github.com/akuzko/excom/wiki/Plugins#assertions) - Provides `assert` method that
 can be used for different logic checks during command execution.
 
+- [`:dry_types`](https://github.com/akuzko/excom/wiki/Plugins#dry-types) - Allows you to use
+[dry-types](http://dry-rb.org/gems/dry-types/) attributes instead of default `args` and `opts`.
+
 - [`:caching`](https://github.com/akuzko/excom/wiki/Plugins#caching) - Simple plugin that will prevent
 re-execution of command if it already has been executed, and will immediately return result.
 

@@ -8,8 +8,9 @@ Excom::Sentry.deny_with :unauthorized
 class Show < Excom::Command
   use :sentry, class: 'MySentry'
   use :caching
+  use :dry_types
 
-  args :foo
+  attribute :foo, Dry::Types['int']
 
   def run
     {foo: foo}
