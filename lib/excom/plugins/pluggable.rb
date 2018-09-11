@@ -22,7 +22,7 @@ module Excom
     def plugins
       @plugins ||= {}
     end
-    alias :extensions :plugins
+    alias extensions plugins
 
     Reflection = Struct.new(:extension, :options)
   end

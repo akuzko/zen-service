@@ -5,11 +5,11 @@ module Excom
     attr_accessor :attributes
     protected :attributes=
 
-    def self.used(command_class, *)
+    def self.used(service_class, *)
       require 'dry-types'
       require 'dry-struct'
 
-      command_class.const_set(:Attributes, Class.new(Dry::Struct))
+      service_class.const_set(:Attributes, Class.new(Dry::Struct))
     end
 
     def initialize(attrs)
@@ -60,10 +60,6 @@ module Excom
       def attribute(name, *args)
         const_get(:Attributes).send(:attribute, name, *args)
         arg_methods.send(:define_method, name){ @attributes.send(name) }
-      end
-
-      def constructor_type(*args)
-        const_get(:Attributes).send(:constructor_type, *args)
       end
     end
   end

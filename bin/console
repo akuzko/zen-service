@@ -5,14 +5,14 @@ require "excom"
 
 Excom::Sentry.deny_with :unauthorized
 
-class Show < Excom::Command
+class Show < Excom::Service
   use :sentry, class: 'MySentry'
   use :caching
   use :dry_types
 
-  attribute :foo, Dry::Types['int']
+  attribute :foo, Dry::Types['integer']
 
-  def run
+  def execute!
     {foo: foo}
   end
 end
@@ -27,7 +27,7 @@ class MySentry < Excom::Sentry
   end
 end
 
-class Save < Excom::Command
+class Save < Excom::Service
   use :sentry, delegate: [:threshold]
   use :assertions
 
@@ -40,7 +40,7 @@ class Save < Excom::Command
     super || 6
   end
 
-  def run
+  def execute!
     result ok: foo * 2
     assert { foo > bar }
   end

@@ -21,22 +21,28 @@ Or install it yourself as:
 
     $ gem install excom
 
+## Preface
+
+`Excom` stands for **Ex**excutable **Com**and. Initially, `Excom::Command` was the main
+class, provided by the gem. But it seems that "Service" name become more popular and
+common for describing classes for business logic, so it was renamed in this gem too.
+
 ## Usage
 
-General idea behind every `excom` command is simple: each command can have arguments,
-options (named arguments), and should define `run` method that is called during
-command execution. Executed command has `status` and `result`.
+General idea behind every `excom` service is simple: each service can have arguments,
+options (named arguments), and should define `execute!` method that is called during
+service execution. Executed service has `status` and `result`.
 
-The **very basic usage** of `Excom` commands can be shown with following example:
+The **very basic usage** of `Excom` services can be shown with following example:
 
 ```rb
-# app/commands/todos/update.rb
+# app/services/todos/update.rb
 module Todos
   class Update < Excom::Command
     args :todo
     opts :params
 
-    def run
+    def execute!
       if todo.update(params)
         result success: todo.as_json
       else
@@ -49,9 +55,9 @@ end
 # app/controllers/todos/controller
 class TodosController < ApplicationController
   def update
-    command = Todos::Update.new(todo, params: todo_params)
+    service = Todos::Update.new(todo, params: todo_params)
 
-    if command.execute.success?
+    if service.execute.success?
       render json: todo.result
     else
       render json: todo.result, status: :unprocessable_entity
@@ -62,21 +68,21 @@ end
 
 However, even this basic example can be highly optimized by using Excom extensions and helper methods.
 
-### Command arguments and options
+### Service arguments and options
 
 Read full version on [wiki](https://github.com/akuzko/excom/wiki#instantiating-command-with-arguments-and-options).
 
-Excom commands can be initialized with _arguments_ and _options_ (named arguments). To specify list
+Excom services can be initialized with _arguments_ and _options_ (named arguments). To specify list
 of available arguments and options, use `args` and `opts` class methods. All arguments and options
-are optional during command initialization. However, you cannot pass more arguments to command or
+are optional during service initialization. However, you cannot pass more arguments to service or
 options that were not declared with `opts` method.
 
 ```rb
-class MyCommand < Excom::Command
+class MyService < Excom::Service
   args :foo
   opts :bar
 
-  def run
+  def execute!
     # do something
   end
 
@@ -85,31 +91,31 @@ class MyCommand < Excom::Command
   end
 end
 
-c1 = MyCommand.new
-c1.foo # => 5
-c1.bar # => nil
+s1 = MyService.new
+s1.foo # => 5
+s1.bar # => nil
 
-c2 = c1.with_args(1).with_opts(bar: 2)
-c2.foo # => 1
-c2.bar # => 2
+s2 = s1.with_args(1).with_opts(bar: 2)
+s2.foo # => 1
+s2.bar # => 2
 ```
 
-### Command Execution
+### Service Execution
 
 Read full version on [wiki](https://github.com/akuzko/excom/wiki#command-execution).
 
-At the core of each command's execution lies `run` method. You can use `status` and/or
+At the core of each service's execution lies `execute!` method. You can use `status` and/or
 `result` methods to set execution status and result. If none were used, result and status
 will be set based on `run` method's return value.
 
 Example:
 
 ```rb
-class MyCommand < Excom::Command
+class MyService < Excom::Service
   alias_success :ok
   args :foo
 
-  def run
+  def execute!
     if foo > 2
       result ok: foo * 2
     else
@@ -118,22 +124,22 @@ class MyCommand < Excom::Command
   end
 end
 
-command = MyCommand.new(3)
-command.execute.success? # => true
-command.status # => :ok
-command.result # => 6
+service = MyService.new(3)
+service.execute.success? # => true
+service.status # => :ok
+service.result # => 6
 ```
 
 ### Core API
 
 Please read about core API and available class and instance methods on [wiki](https://github.com/akuzko/excom/wiki#core-api)
 
-### Command Extensions (Plugins)
+### Service Extensions (Plugins)
 
 Read full version on [wiki](https://github.com/akuzko/excom/wiki/Plugins).
 
 Excom is built with extensions in mind. Even core functionality is organized in plugins that are
-used in base `Excom::Command` class. Bellow you can see a list of plugins with some description
+used in base `Excom::Service` class. Bellow you can see a list of plugins with some description
 and examples that are shipped with `excom`:
 
 - [`:status_helpers`](https://github.com/akuzko/excom/wiki/Plugins#status-helpers) - Allows you to
@@ -145,7 +151,7 @@ class Todos::Update
   use :status_helpers, success: [:ok], failure: [:unprocessable_entity]
   args :todo, :params
 
-  def run
+  def execute!
     if todo.update(params)
       ok todo.as_json
     else
@@ -154,15 +160,15 @@ class Todos::Update
   end
 end
 
-command = Todos::Update.(todo, todo_params)
+service = Todos::Update.(todo, todo_params)
 # in case params were valid you will have:
-command.success? # => true
-command.status # => :ok
-command.result # => {'id' => 1, ...}
+service.success? # => true
+service.status # => :ok
+service.result # => {'id' => 1, ...}
 ```
 
 - [`:context`](https://github.com/akuzko/excom/wiki/Plugins#context) - Allows you to set an execution
-context for a block that will be available to any command that uses this plugin via `context` method.
+context for a block that will be available to any service that uses this plugin via `context` method.
 
 ```rb
 # application_controller.rb
@@ -180,14 +186,14 @@ class Posts::Archive < Excom::Command
   use :context
   args :post
 
-  def run
+  def execute!
     post.update(archived: true, archived_by: context[:current_user])
   end
 end
 ```
 
 - [`:sentry`](https://github.com/akuzko/excom/wiki/Plugins#sentry) - Allows you to define sentry logic that
-will allow or deny command's execution or other related checks. This logic can be defined inline in command
+will allow or deny service's execution or other related checks. This logic can be defined inline in service
 classes or in dedicated Sentry classes. Much like [pundit](https://github.com/elabs/pundit) Policies, but
 more. Where pundit governs only authorization logic, Excom's Sentries can deny execution with any reason
 you find appropriate.
@@ -199,7 +205,7 @@ class Posts::Destroy < Excom::Command
 
   args :post
 
-  def run
+  def execute!
     post.destroy
   end
 
@@ -222,16 +228,16 @@ end
 ```
 
 - [`:assertions`](https://github.com/akuzko/excom/wiki/Plugins#assertions) - Provides `assert` method that
-can be used for different logic checks during command execution.
+can be used for different logic checks during service execution.
 
 - [`:dry_types`](https://github.com/akuzko/excom/wiki/Plugins#dry-types) - Allows you to use
 [dry-types](http://dry-rb.org/gems/dry-types/) attributes instead of default `args` and `opts`.
 
 - [`:caching`](https://github.com/akuzko/excom/wiki/Plugins#caching) - Simple plugin that will prevent
-re-execution of command if it already has been executed, and will immediately return result.
+re-execution of service if it already has been executed, and will immediately return result.
 
 - [`:rescue`](https://github.com/akuzko/excom/wiki/Plugins#rescue) - Provides `:rescue` execution option.
-If set to `true`, any error occurred during command execution will not be raised outside.
+If set to `true`, any error occurred during service execution will not be raised outside.
 
 ## Development
 

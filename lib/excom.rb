@@ -2,7 +2,7 @@ require "excom/version"
 
 module Excom
   autoload :Plugins, 'excom/plugins'
-  autoload :Command, 'excom/command'
+  autoload :Service, 'excom/service'
 
   extend Plugins::Context::ExcomMethods
 

@@ -9,13 +9,13 @@ module Excom
         sentry_class.send(:include, sentry_class::Delegations)
       end
 
-      def self.command_class=(klass)
-        sentinels.each{ |s| s.command_class = klass }
-        @command_class = klass
+      def self.service_class=(klass)
+        sentinels.each{ |s| s.service_class = klass }
+        @service_class = klass
       end
 
-      def self.command_class
-        @command_class
+      def self.service_class
+        @service_class
       end
 
       def self.deny_with(reason)
@@ -56,10 +56,10 @@ module Excom
         const_get(:Delegations)
       end
 
-      attr_reader :command
+      attr_reader :service
 
-      def initialize(command)
-        @command = command
+      def initialize(service)
+        @service = service
       end
 
       def denial_reason(action)
@@ -74,7 +74,7 @@ module Excom
 
       def sentry(klass)
         klass = derive_sentry_class(klass) unless Class === klass
-        klass.new(command)
+        klass.new(service)
       end
 
       def to_hash
@@ -93,7 +93,7 @@ module Excom
 
       private def sentinels
         @sentinels ||= self.class.sentinels.map do |klass|
-          klass.new(command)
+          klass.new(service)
         end
       end
 
@@ -104,7 +104,7 @@ module Excom
       end
 
       private def constantize(klass, sentry_name)
-        module_prefix = (inline? ? self.class.command_class.name : self.class.name).sub(/[^:]+\Z/, ''.freeze)
+        module_prefix = (inline? ? self.class.service_class.name : self.class.name).sub(/[^:]+\Z/, ''.freeze)
 
         klass_name = module_prefix + "_#{klass}".gsub!(/(_([a-z]))/){ $2.upcase } + sentry_name
 
@@ -114,15 +114,15 @@ module Excom
       end
 
       private def inline?
-        self.class.command_class.const_defined?(:Sentry) && self.class.command_class::Sentry == self.class
+        self.class.service_class.const_defined?(:Sentry) && self.class.service_class::Sentry == self.class
       end
 
       private def define_delegations!
-        delegated_methods = self.class.command_class.arg_methods.instance_methods +
-          Array(self.class.command_class.plugins[:sentry].options[:delegate])
+        delegated_methods = self.class.service_class.arg_methods.instance_methods +
+          Array(self.class.service_class.plugins[:sentry].options[:delegate])
 
         delegated_methods.each do |name|
-          self.class.delegations.send(:define_method, name) { command.public_send(name) }
+          self.class.delegations.send(:define_method, name) { service.public_send(name) }
         end
 
         self.class.instance_variable_set('@delegations_defined'.freeze, true)

@@ -15,7 +15,7 @@ module Excom
 
     def execute(*, &block)
       clear_execution_state!
-      result = run(&block)
+      result = execute!(&block)
       result_with(result) unless defined? @result
       @executed = true
 
@@ -30,7 +30,7 @@ module Excom
       Result.new(status, result)
     end
 
-    private def run
+    private def execute!
       success!
     end
 
@@ -116,7 +116,7 @@ module Excom
       end
 
       def method_added(name)
-        private :run if name == :run
+        private :execute! if name == :execute!
         super if defined? super
       end
     end

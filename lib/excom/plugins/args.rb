@@ -67,11 +67,11 @@ module Excom
     end
 
     module ClassMethods
-      def inherited(command_class)
-        command_class.const_set(:ArgMethods, Module.new)
-        command_class.send(:include, command_class::ArgMethods)
-        command_class.args_list.replace args_list.dup
-        command_class.opts_list.replace opts_list.dup
+      def inherited(service_class)
+        service_class.const_set(:ArgMethods, Module.new)
+        service_class.send(:include, service_class::ArgMethods)
+        service_class.args_list.replace args_list.dup
+        service_class.opts_list.replace opts_list.dup
       end
 
       def arg_methods

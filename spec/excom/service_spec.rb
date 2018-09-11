@@ -1,109 +1,109 @@
 require 'spec_helper'
 
-RSpec.describe Excom::Command do
+RSpec.describe Excom::Service do
   describe 'args' do
-    Kommand do
+    def_service do
       args :foo, :bar
       opts :baz, :bak
     end
 
     describe 'inheritance' do
-      let(:inherited_kommand) do
-        Class.new(kommand_class) do
+      let(:inherited_service_class) do
+        Class.new(service_class) do
           args :foobar
           opts :bazbak
         end
       end
 
       it 'inherits args and opts list' do
-        expect(kommand_class.args_list).to eq [:foo, :bar]
-        expect(kommand_class.opts_list).to eq [:baz, :bak]
-        expect(inherited_kommand.args_list).to eq [:foo, :bar, :foobar]
-        expect(inherited_kommand.opts_list).to eq [:baz, :bak, :bazbak]
+        expect(service_class.args_list).to eq [:foo, :bar]
+        expect(service_class.opts_list).to eq [:baz, :bak]
+        expect(inherited_service_class.args_list).to eq [:foo, :bar, :foobar]
+        expect(inherited_service_class.opts_list).to eq [:baz, :bak, :bazbak]
       end
 
       specify 'reader helpers' do
-        base_command = kommand_class.new
-        inherited_command = inherited_kommand.new
+        base_service = service_class.new
+        inherited_service = inherited_service_class.new
 
-        expect(base_command).not_to respond_to :foobar
-        expect(base_command).not_to respond_to :bazbak
-        expect(inherited_command).to respond_to :foobar
-        expect(inherited_command).to respond_to :bazbak
+        expect(base_service).not_to respond_to :foobar
+        expect(base_service).not_to respond_to :bazbak
+        expect(inherited_service).to respond_to :foobar
+        expect(inherited_service).to respond_to :bazbak
       end
     end
 
     context 'when correctly initialized' do
-      it 'sets command args and opts' do
-        command = Kommand(1, baz: 2)
+      it 'sets service args and opts' do
+        service = build_service(1, baz: 2)
 
-        expect(command.foo).to eq 1
-        expect(command.bar).to be nil
-        expect(command.baz).to eq 2
-        expect(command.bak).to be nil
+        expect(service.foo).to eq 1
+        expect(service.bar).to be nil
+        expect(service.baz).to eq 2
+        expect(service.bak).to be nil
       end
     end
 
     context 'when too many args' do
       it 'fails with an error' do
-        expect{ Kommand(1, 2, 3) }.to raise_error(ArgumentError)
+        expect{ build_service(1, 2, 3) }.to raise_error(ArgumentError)
       end
     end
 
     context 'when invalid opts' do
       it 'fails with an error' do
-        expect{ Kommand(1, 2, paw: 'wow') }.to raise_error(ArgumentError)
+        expect{ build_service(1, 2, paw: 'wow') }.to raise_error(ArgumentError)
       end
     end
 
     describe 'opts resolution' do
       it 'sends unkown options to args, if there is place for it' do
-        command = Kommand(1, baz: 2, paw: 'wow')
-        expect(command.foo).to eq 1
-        expect(command.bar).to eq(paw: 'wow')
-        expect(command.baz).to eq 2
+        service = build_service(1, baz: 2, paw: 'wow')
+        expect(service.foo).to eq 1
+        expect(service.bar).to eq(paw: 'wow')
+        expect(service.baz).to eq 2
       end
     end
 
     describe '#with_args' do
-      let(:command) { Kommand(1) }
+      let(:service) { build_service(1) }
 
-      it 'generates a new command with replaced args' do
-        args_command = command.with_args(2, 3)
-        expect(command.foo).to eq 1
-        expect(args_command.foo).to eq 2
-        expect(args_command.bar).to eq 3
+      it 'generates a new service with replaced args' do
+        args_service = service.with_args(2, 3)
+        expect(service.foo).to eq 1
+        expect(args_service.foo).to eq 2
+        expect(args_service.bar).to eq 3
       end
 
       it 'clears execution flags' do
-        command.execute
-        expect(command.with_args(2, 3)).not_to be_executed
+        service.execute
+        expect(service.with_args(2, 3)).not_to be_executed
       end
     end
 
     describe '#with_opts' do
-      let(:command) { Kommand(baz: 1) }
+      let(:service) { build_service(baz: 1) }
 
-      it 'generates a new command with merged opts' do
-        args_command = command.with_opts(bak: 2)
-        expect(args_command.baz).to eq 1
-        expect(args_command.bak).to eq 2
+      it 'generates a new service with merged opts' do
+        opts_service = service.with_opts(bak: 2)
+        expect(opts_service.baz).to eq 1
+        expect(opts_service.bak).to eq 2
       end
 
       it 'clears execution flags' do
-        command.execute
-        expect(command.with_opts(bak: 2)).not_to be_executed
+        service.execute
+        expect(service.with_opts(bak: 2)).not_to be_executed
       end
     end
   end
 
   describe 'execution' do
     describe '#result' do
-      subject(:command) { Kommand().execute }
+      subject(:service) { build_service.execute }
 
       context 'success with Hash' do
-        Kommand do
-          def run
+        def_service do
+          def execute!
             result success: :result
           end
         end
@@ -114,8 +114,8 @@ RSpec.describe Excom::Command do
       end
 
       context 'success with object' do
-        Kommand do
-          def run
+        def_service do
+          def execute!
             result :result
           end
         end
@@ -126,8 +126,8 @@ RSpec.describe Excom::Command do
       end
 
       context 'implicit success' do
-        Kommand do
-          def run
+        def_service do
+          def execute!
             :result
           end
         end
@@ -138,8 +138,8 @@ RSpec.describe Excom::Command do
       end
 
       context 'fail with Hash' do
-        Kommand do
-          def run
+        def_service do
+          def execute!
             result custom_failure: :error
           end
         end
@@ -150,8 +150,8 @@ RSpec.describe Excom::Command do
       end
 
       context 'implicit failure' do
-        Kommand do
-          def run
+        def_service do
+          def execute!
             nil
           end
         end
@@ -163,109 +163,109 @@ RSpec.describe Excom::Command do
     end
 
     describe '.fail_with' do
-      Kommand do
+      def_service do
         fail_with :total_failure
 
-        def run
+        def execute!
           failure!
         end
       end
 
-      subject(:command) { Kommand().execute }
+      subject(:service) { build_service.execute }
 
       it { is_expected.to be_failure }
       its(:status) { is_expected.to eq :total_failure }
     end
 
     describe '.alias_success' do
-      Kommand do
+      def_service do
         alias_success :ok
 
-        def run
+        def execute!
           result ok: 5
         end
       end
 
-      subject(:command) { Kommand().execute }
+      subject(:service) { build_service.execute }
 
       it { is_expected.to be_success }
       its(:status) { is_expected.to eq :ok }
       its(:result) { is_expected.to eq 5 }
     end
 
-    describe '#run' do
-      Kommand do
-        def run
+    describe '#execute!' do
+      def_service do
+        def execute!
           success!
         end
       end
 
       it 'automatically becomes private' do
-        expect{ Kommand().run }.to raise_error(/private method `run'/)
+        expect{ build_service.execute! }.to raise_error(/private method `execute!'/)
       end
     end
 
     describe '#status' do
-      Kommand do
-        def run
+      def_service do
+        def execute!
           status :ok
         end
       end
 
-      let(:command) { Kommand().execute }
+      let(:service) { build_service.execute }
 
       it 'assigns status' do
-        expect(command.status).to eq :ok
+        expect(service.status).to eq :ok
       end
     end
 
     describe '.call and .[] helpers' do
-      Kommand do
+      def_service do
         args :arg
 
-        def run
+        def execute!
           arg
         end
       end
 
       specify '.call' do
-        command = kommand_class.(:foo)
-        expect(command).to be_executed
+        service = service_class.(:foo)
+        expect(service).to be_executed
       end
 
       specify '.[]' do
-        result = kommand_class[:foo]
+        result = service_class[:foo]
         expect(result).to eq :foo
       end
     end
 
-    describe 'command execution delegation' do
-      Kommand do
+    describe 'service execution delegation' do
+      def_service do
         args :arg
         alias_success :ok
 
-        def run
+        def execute!
           result ok: arg * 2
         end
       end
 
-      let(:other_kommand_class) do
-        klass = kommand_class
+      let(:other_service_class) do
+        klass = service_class
 
-        other_kommand_class = Class.new(Excom::Command) do
+        Class.new(Excom::Service) do
           args :arg
 
-          define_method(:run) do
+          define_method(:execute!) do
             ~klass.(arg)
           end
         end
       end
 
       specify 'both :status and :result can be delegated via ~@ method' do
-        other_kommand = other_kommand_class.(5)
+        other_service = other_service_class.(5)
 
-        expect(other_kommand.status).to be :ok
-        expect(other_kommand.result).to be 10
+        expect(other_service.status).to be :ok
+        expect(other_service.result).to be 10
       end
     end
   end

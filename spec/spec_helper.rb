@@ -5,11 +5,11 @@ require 'pry'
 
 module SpecHelper
   module GroupMethods
-    def Kommand(&block)
-      let(:kommand_class) { Class.new(Excom::Command, &block) }
+    def def_service(&block)
+      let(:service_class) { Class.new(Excom::Service, &block) }
     end
 
-    def Sentry(&block)
+    def def_sentry(&block)
       before do
         Object.send(:remove_const, :SpecSentry) if defined? SpecSentry
 
@@ -20,8 +20,8 @@ module SpecHelper
   end
 
   module ExampleMethods
-    def Kommand(*args)
-      kommand_class.new(*args)
+    def build_service(*args)
+      service_class.new(*args)
     end
   end
 end

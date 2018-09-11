@@ -2,32 +2,32 @@ require 'spec_helper'
 require 'forwardable'
 
 RSpec.describe 'Excom::Plugins::Sentry' do
-  Kommand do
+  def_service do
     use :sentry, class: 'SpecSentry'
     opts :user, :post
 
-    def run
+    def execute!
       post[:deleted] = true
     end
   end
 
-  let(:command) { Kommand(user: user, post: post) }
+  let(:service) { build_service(user: user, post: post) }
   let(:user) { {id: 1} }
   let(:post) { {author_id: 1, outdated: false} }
 
   describe 'inheritance' do
-    Sentry do
+    def_sentry do
       allow :execute
     end
 
     it 'inherits sentry class' do
-      inherited_kommand = Class.new(kommand_class)
-      expect(inherited_kommand.sentry_class).to be SpecSentry
+      inherited_service_class = Class.new(service_class)
+      expect(inherited_service_class.sentry_class).to be SpecSentry
     end
   end
 
   describe 'simple case' do
-    Sentry do
+    def_sentry do
       def execute?
         user[:id] == post[:author_id]
       end
@@ -35,8 +35,8 @@ RSpec.describe 'Excom::Plugins::Sentry' do
 
     context 'when sentry allows execution' do
       it 'executes successfully' do
-        expect(command.execute).to be_success
-        expect(command).to be_executed
+        expect(service.execute).to be_success
+        expect(service).to be_executed
         expect(post[:deleted]).to be true
       end
     end
@@ -45,15 +45,15 @@ RSpec.describe 'Excom::Plugins::Sentry' do
       let(:user) { {id: 2} }
 
       it 'denies execution' do
-        expect(command).not_to receive(:run)
-        expect(command.execute).not_to be_success
-        expect(command.status).to be :denied
+        expect(service).not_to receive(:run)
+        expect(service.execute).not_to be_success
+        expect(service.status).to be :denied
       end
     end
   end
 
   describe 'advanced usage' do
-    Sentry do
+    def_sentry do
       deny_with :unauthorized do
         def execute?
           user[:id] == post[:author_id]
@@ -73,9 +73,9 @@ RSpec.describe 'Excom::Plugins::Sentry' do
       let(:user) { {id: 2} }
 
       it 'denies execution with proper reason' do
-        expect(command).not_to receive(:run)
-        expect(command.execute).not_to be_success
-        expect(command.status).to be :unauthorized
+        expect(service).not_to receive(:run)
+        expect(service.execute).not_to be_success
+        expect(service.status).to be :unauthorized
       end
     end
 
@@ -83,9 +83,9 @@ RSpec.describe 'Excom::Plugins::Sentry' do
       let(:post) { {author_id: 1, outdated: true} }
 
       it 'denies execution with proper reason' do
-        expect(command).not_to receive(:run)
-        expect(command.execute).not_to be_success
-        expect(command.status).to be :unprocessable_entity
+        expect(service).not_to receive(:run)
+        expect(service.execute).not_to be_success
+        expect(service.status).to be :unprocessable_entity
       end
     end
 
@@ -93,7 +93,7 @@ RSpec.describe 'Excom::Plugins::Sentry' do
       let(:post) { {author_id: 1, outdated: true} }
 
       it 'returns a permissions hash' do
-        expect(command.sentry.to_hash).to eq(
+        expect(service.sentry.to_hash).to eq(
           'execute' => false,
           'publish' => true
         )
@@ -102,11 +102,11 @@ RSpec.describe 'Excom::Plugins::Sentry' do
   end
 
   describe 'inline sentry usage' do
-    Kommand do
+    def_service do
       use :sentry
       opts :user, :post
 
-      def run
+      def execute!
         post[:deleted] = true
       end
 
@@ -139,9 +139,9 @@ RSpec.describe 'Excom::Plugins::Sentry' do
       let(:user) { {id: 2} }
 
       it 'denies execution with proper reason' do
-        expect(command).not_to receive(:run)
-        expect(command.execute).not_to be_success
-        expect(command.status).to be :unauthorized
+        expect(service).not_to receive(:run)
+        expect(service.execute).not_to be_success
+        expect(service.status).to be :unauthorized
       end
     end
 
@@ -149,9 +149,9 @@ RSpec.describe 'Excom::Plugins::Sentry' do
       let(:post) { {author_id: 1, outdated: true} }
 
       it 'denies execution with proper reason' do
-        expect(command).not_to receive(:run)
-        expect(command.execute).not_to be_success
-        expect(command.status).to be :unprocessable_entity
+        expect(service).not_to receive(:run)
+        expect(service.execute).not_to be_success
+        expect(service.status).to be :unprocessable_entity
       end
     end
 
@@ -159,7 +159,7 @@ RSpec.describe 'Excom::Plugins::Sentry' do
       let(:post) { {author_id: 1, outdated: true} }
 
       it 'returns a permissions hash' do
-        expect(command.sentry_hash).to eq(
+        expect(service.sentry_hash).to eq(
           'execute' => false,
           'publish' => true,
           'foo'     => true
@@ -169,7 +169,7 @@ RSpec.describe 'Excom::Plugins::Sentry' do
   end
 
   describe 'helper methods' do
-    Sentry do
+    def_sentry do
       allow :execute
       deny :delete
 
@@ -181,14 +181,14 @@ RSpec.describe 'Excom::Plugins::Sentry' do
     end
 
     it 'assigns permissions properly' do
-      expect(command.can?(:execute)).to be true
-      expect(command.can?(:delete)).to be false
-      expect(command.can?(:archive)).to be false
-      expect(command.can?(:update)).to be false
+      expect(service.can?(:execute)).to be true
+      expect(service.can?(:delete)).to be false
+      expect(service.can?(:archive)).to be false
+      expect(service.can?(:update)).to be false
 
-      expect(command.why_cant(:delete)).to be :denied
-      expect(command.why_cant(:archive)).to be :unauthorized
-      expect(command.why_cant(:update)).to be :unprocessable_entity
+      expect(service.why_cant(:delete)).to be :denied
+      expect(service.why_cant(:archive)).to be :unauthorized
+      expect(service.why_cant(:update)).to be :unprocessable_entity
     end
 
     describe '#sentry' do
@@ -197,23 +197,23 @@ RSpec.describe 'Excom::Plugins::Sentry' do
       end
 
       context 'when klass is used' do
-        Sentry do
+        def_sentry do
           def other?
             sentry(OtherSpecSentry).execute?
           end
         end
 
-        specify { expect(command.can?(:other)).to be false }
+        specify { expect(service.can?(:other)).to be false }
       end
 
       context 'when symbol is used' do
-        Sentry do
+        def_sentry do
           def other?
             sentry(:other_spec).execute?
           end
         end
 
-        specify { expect(command.can?(:other)).to be false }
+        specify { expect(service.can?(:other)).to be false }
       end
     end
   end

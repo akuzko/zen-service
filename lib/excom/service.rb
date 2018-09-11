@@ -1,5 +1,5 @@
 module Excom
-  class Command
+  class Service
     extend Excom::Plugins::Pluggable
 
     use :executable

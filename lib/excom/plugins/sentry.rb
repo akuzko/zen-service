@@ -4,10 +4,10 @@ module Excom
 
     Plugins.register :sentry, self
 
-    def self.used(command_class, **opts)
+    def self.used(service_class, **opts)
       klass = opts[:class]
 
-      command_class._sentry_class = klass if klass
+      service_class._sentry_class = klass if klass
     end
 
     def execute(*)
@@ -39,9 +39,9 @@ module Excom
     module ClassMethods
       attr_writer :_sentry_class
 
-      def inherited(command_class)
+      def inherited(service_class)
         super
-        command_class.sentry_class(_sentry_class)
+        service_class.sentry_class(_sentry_class)
       end
 
       def sentry_class(klass = UNDEFINED)
@@ -59,7 +59,7 @@ module Excom
             _sentry_class
           end
 
-        @sentry_class.command_class = self
+        @sentry_class.service_class = self
         @sentry_class
       end
 
@@ -74,7 +74,7 @@ module Excom
           const_get(:Sentry).class_eval(&block)
         else
           @_sentry_class = @sentry_class = Class.new(Sentry, &block)
-          @sentry_class.command_class = self
+          @sentry_class.service_class = self
           const_set(:Sentry, @_sentry_class)
         end
       end
