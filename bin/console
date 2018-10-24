@@ -27,22 +27,28 @@ class MySentry < Excom::Sentry
   end
 end
 
+class MyErrors < Hash
+  def add(key, message)
+    (self[key] ||= []) << message
+  end
+end
+
 class Save < Excom::Service
   use :sentry, delegate: [:threshold]
   use :assertions
+  use :errors, errors_class: MyErrors
 
   args :foo
   opts :bar, :baz
-
-  alias_success :ok
 
   def foo
     super || 6
   end
 
   def execute!
-    result ok: foo * 2
+    result { foo * 2 }
     assert { foo > bar }
+    errors.add(:foo, 'invalid') if foo > 5
   end
 
   def threshold

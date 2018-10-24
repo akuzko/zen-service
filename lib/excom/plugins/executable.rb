@@ -2,7 +2,9 @@ module Excom
   module Plugins::Executable
     Plugins.register :executable, self
 
-    Result = Struct.new(:status, :result)
+    Result = Struct.new(:success, :status, :result, :cause)
+
+    attr_reader :status, :cause
 
     def initialize(*)
       @executed = false
@@ -27,7 +29,7 @@ module Excom
     end
 
     def ~@
-      Result.new(status, result)
+      Result.new(success?, status, result, cause)
     end
 
     private def execute!
@@ -38,54 +40,58 @@ module Excom
       @executed = false
       remove_instance_variable('@result'.freeze) if defined?(@result)
       remove_instance_variable('@status'.freeze) if defined?(@status)
+      remove_instance_variable('@cause'.freeze) if defined?(@cause)
+      remove_instance_variable('@success'.freeze) if defined?(@success)
     end
 
-    def result(obj = UNDEFINED)
-      return @result if obj == UNDEFINED
+    private def finish_with!(status, success:)
+      @success = success
+      @status = status
+      @cause = nil
+      @result = nil
+    end
 
-      case obj
-      when Hash
-        if obj.length != 1
-          fail ArgumentError, "expected 1-item status-result pair, got: #{obj.inspect}"
-        end
+    private def success!(status = :success)
+      finish_with!(status, success: true)
+    end
 
-        @status, @result = obj.first
-      else
-        result_with(obj)
-      end
+    private def success(status = :success)
+      success!(status)
+      @result = yield
+    end
+
+    private def failure!(status = fail_with)
+      finish_with!(status, success: false)
+    end
+
+    private def failure(status = fail_with)
+      failure!(status)
+      @cause = yield
+    end
+
+    def result
+      return @result unless block_given?
+
+      result_with(yield)
     end
 
     private def result_with(obj)
       if Result === obj
-        @status, @result = obj.status, obj.result
+        @success, @status, @result, @cause = obj.success, obj.status, obj.result, obj.cause
         return @result
       end
 
-      @status = obj ? :success : fail_with unless defined?(@status)
+      @success = !!obj
+      @status = @success ? :success : fail_with unless defined?(@status)
       @result = obj
     end
 
-    def status(status = UNDEFINED)
-      return @status = status unless status == UNDEFINED
-
-      @status
-    end
-
     def success?
-      status == :success || self.class.success_aliases.include?(status)
+      @success == true
     end
 
     def failure?
       !success?
-    end
-
-    private def success!
-      @status = :success
-      @result = true
-    end
-
-    private def failure!(status = fail_with)
-      @status = status
     end
 
     protected def fail_with
@@ -105,14 +111,6 @@ module Excom
         return @fail_with || :failure if status.nil?
 
         @fail_with = status
-      end
-
-      def success_aliases
-        []
-      end
-
-      def alias_success(*aliases)
-        singleton_class.send(:define_method, :success_aliases) { super() + aliases }
       end
 
       def method_added(name)

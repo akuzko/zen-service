@@ -4,7 +4,8 @@ module Excom
 
     def assert(fail_with: self.fail_with)
       if yield
-        status :success unless defined?(@status)
+        @success = true unless defined?(@success)
+        @status = :success unless defined?(@status)
       else
         failure!(fail_with)
       end

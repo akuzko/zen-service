@@ -8,7 +8,7 @@ RSpec.describe 'Excom::Plugins::Assetions' do
     fail_with :too_low
 
     def execute!
-      result foo
+      result { foo }
       assert { foo > 2 }
     end
   end
@@ -26,9 +26,9 @@ RSpec.describe 'Excom::Plugins::Assetions' do
     let(:service) { build_service(foo: 2) }
 
     specify 'service fails' do
-      expect(service.execute.result).to eq 2
+      expect(service.execute.result).to be nil
       expect(service).not_to be_success
-      expect(service.status).to eq :too_low
+      expect(service.status).to be :too_low
     end
   end
 end

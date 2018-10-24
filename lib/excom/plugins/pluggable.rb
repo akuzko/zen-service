@@ -6,6 +6,9 @@ module Excom
       method = extension.excom_options[:use_with] || :include
       send(method, extension)
 
+      defaults = extension.excom_options[:default_options]
+      opts = defaults.merge(opts) unless defaults.nil?
+
       if extension.const_defined?('ClassMethods')
         extend extension::ClassMethods
       end

@@ -186,9 +186,9 @@ RSpec.describe 'Excom::Plugins::Sentry' do
       expect(service.can?(:archive)).to be false
       expect(service.can?(:update)).to be false
 
-      expect(service.why_cant(:delete)).to be :denied
-      expect(service.why_cant(:archive)).to be :unauthorized
-      expect(service.why_cant(:update)).to be :unprocessable_entity
+      expect(service.why_cant?(:delete)).to be :denied
+      expect(service.why_cant?(:archive)).to be :unauthorized
+      expect(service.why_cant?(:update)).to be :unprocessable_entity
     end
 
     describe '#sentry' do

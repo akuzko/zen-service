@@ -21,8 +21,10 @@ module Excom
       end
     end
 
-    def local_context
-      @local_context
+    def execute(*)
+      Excom.with_context(context) do
+        super
+      end
     end
 
     module ExcomMethods

@@ -11,7 +11,7 @@ module Excom
     end
 
     def execute(*)
-      reason = why_cant(:execute)
+      reason = why_cant?(:execute)
 
       return super if reason.nil?
 
@@ -21,10 +21,10 @@ module Excom
     end
 
     def can?(action)
-      why_cant(action).nil?
+      why_cant?(action).nil?
     end
 
-    def why_cant(action)
+    def why_cant?(action)
       sentry.denial_reason(action)
     end
 

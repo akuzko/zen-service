@@ -1,11 +1,18 @@
 module Excom
   module Plugins::Caching
-    Plugins.register :caching, self, use_with: :prepend
+    Plugins.register :caching, self
 
-    def execute(*)
-      return super if block_given? || !executed?
+    def initialize(*)
+      super
+      extend Extension
+    end
 
-      self
+    module Extension
+      def execute(*)
+        return super if block_given? || !executed?
+
+        self
+      end
     end
   end
 end

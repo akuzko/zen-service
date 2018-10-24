@@ -34,5 +34,24 @@ RSpec.describe 'Excom::Plugins::Context' do
       expect(service.with_context(foo: 'bar').with_context(bar: 'baz').context)
         .to eq(foo: 'bar', bar: 'baz')
     end
+
+    describe 'using local context during execution' do
+      let(:other_service_class) do
+        klass = service_class
+
+        Class.new(Excom::Service) do
+          use :context
+
+          define_method(:execute!) do
+            klass.new.execute.result * 2
+          end
+        end
+      end
+
+      it 'uses local context during execution' do
+        service = other_service_class.new.with_context(foo: 5)
+        expect(service.execute.result).to eq 10
+      end
+    end
   end
 end

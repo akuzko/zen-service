@@ -21,8 +21,8 @@ RSpec.describe 'Excom::Plugins::StatusHelpers' do
     let(:service) { build_service(all_good: true) }
 
     it 'executes correctly' do
-      expect(service.execute.result).to eq :fine
-      expect(service.status).to eq :ok
+      expect(service.execute.result).to be :fine
+      expect(service.status).to be :ok
       expect(service).to be_success
     end
   end
@@ -31,8 +31,8 @@ RSpec.describe 'Excom::Plugins::StatusHelpers' do
     let(:service) { build_service(all_good: false) }
 
     it 'executes correctly' do
-      expect(service.execute.result).to eq :error
-      expect(service.status).to eq :not_ok
+      expect(service.execute.cause).to be :error
+      expect(service.status).to be :not_ok
       expect(service).not_to be_success
     end
   end

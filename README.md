@@ -44,9 +44,9 @@ module Todos
 
     def execute!
       if todo.update(params)
-        result success: todo.as_json
+        success { todo.as_json }
       else
-        result failure: todo.errors
+        failure { todo.errors }
       end
     end
   end
@@ -60,7 +60,7 @@ class TodosController < ApplicationController
     if service.execute.success?
       render json: todo.result
     else
-      render json: todo.result, status: :unprocessable_entity
+      render json: todo.cause, status: :unprocessable_entity
     end
   end
 end
