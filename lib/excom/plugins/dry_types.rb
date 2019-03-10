@@ -41,20 +41,20 @@ module Excom
     end
 
     def with_args(*)
-      fail "`with_args' method is not available with :dry_types plugin. use `with_attributes' method instead"
+      raise("`with_args' method is not available with :dry_types plugin. use `with_attributes' method instead")
     end
 
     def with_opts(*)
-      fail "`with_opts' method is not available with :dry_types plugin. use `with_attributes' method instead"
+      raise("`with_opts' method is not available with :dry_types plugin. use `with_attributes' method instead")
     end
 
     module ClassMethods
       def args(*)
-        fail "`args' method is not available with :dry_types plugin. use `attribute' method instead"
+        raise("`args' method is not available with :dry_types plugin. use `attribute' method instead")
       end
 
       def opts(*)
-        fail "`args' method is not available with :dry_types plugin. use `attribute' method instead"
+        raise("`args' method is not available with :dry_types plugin. use `attribute' method instead")
       end
 
       def attribute(name, *args)

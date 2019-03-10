@@ -1,6 +1,6 @@
 # Excom
 
-Flexible and highly extensible Commands (Service Objects) for business logic.
+Flexible and highly extensible Service Objects for business logic organization.
 
 [![build status](https://secure.travis-ci.org/akuzko/excom.png)](http://travis-ci.org/akuzko/excom)
 [![github release](https://img.shields.io/github/release/akuzko/excom.svg)](https://github.com/akuzko/excom/releases)
@@ -33,20 +33,23 @@ General idea behind every `excom` service is simple: each service can have argum
 options (named arguments), and should define `execute!` method that is called during
 service execution. Executed service has `status` and `result`.
 
-The **very basic usage** of `Excom` services can be shown with following example:
+The very basic usage of `Excom` services can be shown with following example:
 
 ```rb
 # app/services/todos/update.rb
 module Todos
-  class Update < Excom::Command
+  class Update < Excom::Service
+    # `use` class method adds a plugin to a service with specified options
+    use :status, success: [:ok], failure: [:unprocessable_entity]
+    
     args :todo
     opts :params
 
     def execute!
       if todo.update(params)
-        success { todo.as_json }
+        ok todo.as_json
       else
-        failure { todo.errors }
+        unprocessable_entity todo.errors
       end
     end
   end
@@ -55,13 +58,9 @@ end
 # app/controllers/todos/controller
 class TodosController < ApplicationController
   def update
-    service = Todos::Update.new(todo, params: todo_params)
+    service = Todos::Update.(todo, params: todo_params)
 
-    if service.execute.success?
-      render json: todo.result
-    else
-      render json: todo.cause, status: :unprocessable_entity
-    end
+    render json: todo.result, status: service.status
   end
 end
 ```
@@ -70,7 +69,7 @@ However, even this basic example can be highly optimized by using Excom extensio
 
 ### Service arguments and options
 
-Read full version on [wiki](https://github.com/akuzko/excom/wiki#instantiating-command-with-arguments-and-options).
+Read full version on [wiki](https://github.com/akuzko/excom/wiki#instantiating-service-with-arguments-and-options).
 
 Excom services can be initialized with _arguments_ and _options_ (named arguments). To specify list
 of available arguments and options, use `args` and `opts` class methods. All arguments and options
@@ -102,31 +101,29 @@ s2.bar # => 2
 
 ### Service Execution
 
-Read full version on [wiki](https://github.com/akuzko/excom/wiki#command-execution).
+Read full version on [wiki](https://github.com/akuzko/excom/wiki#service-execution).
 
-At the core of each service's execution lies `execute!` method. You can use `status` and/or
-`result` methods to set execution status and result. If none were used, result and status
-will be set based on `run` method's return value.
+At the core of each service's execution lies `execute!` method. By default, you can use
+`success`, `failure` and `result` methods to set execution status and result. If none
+were used, result and status will be set based on `execute!` method's return value.
 
 Example:
 
 ```rb
 class MyService < Excom::Service
-  alias_success :ok
   args :foo
 
   def execute!
     if foo > 2
-      result ok: foo * 2
+      success { foo * 2 }
     else
-      result failure: -1
+      failure { -1 }
     end
   end
 end
 
 service = MyService.new(3)
 service.execute.success? # => true
-service.status # => :ok
 service.result # => 6
 ```
 
@@ -142,30 +139,39 @@ Excom is built with extensions in mind. Even core functionality is organized in 
 used in base `Excom::Service` class. Bellow you can see a list of plugins with some description
 and examples that are shipped with `excom`:
 
-- [`:status_helpers`](https://github.com/akuzko/excom/wiki/Plugins#status-helpers) - Allows you to
-define status aliases and helper methods named after them to immediately and more explicitly assign
-both status and result at the same time:
+- [`:status`](https://github.com/akuzko/excom/wiki/Plugins#status) - Adds `status` execution state
+property to the service, as well as helper methods and behavior to set it. `status` property is not
+bound to the "success" flag of execution state and can have any value depending on your needs. It
+is up to you to setup which statuses correspond to successful execution and which are not. Generated
+status helper methods allow to atomically and more explicitly assign both status and result at
+the same time:
 
 ```rb
-class Todos::Update
-  use :status_helpers, success: [:ok], failure: [:unprocessable_entity]
-  args :todo, :params
+class Posts::Update < Excom::Service
+  use :status,
+    success: [:ok],
+    failure: [:unprocessable_entity]
+  
+  args :post, :params
 
   def execute!
-    if todo.update(params)
-      ok todo.as_json
+    if post.update(params)
+      ok post.as_json
     else
-      unprocessable_entity todo.errors
+      unprocessable_entity post.errors
     end
   end
 end
 
-service = Todos::Update.(todo, todo_params)
+service = Posts::Update.(post, post_params)
 # in case params were valid you will have:
 service.success? # => true
 service.status # => :ok
 service.result # => {'id' => 1, ...}
 ```
+
+Note that unlike `success`, `failure`, or `result` methods, status helpers accept result value
+as its argument rather than yield to a block to get it.
 
 - [`:context`](https://github.com/akuzko/excom/wiki/Plugins#context) - Allows you to set an execution
 context for a block that will be available to any service that uses this plugin via `context` method.
@@ -182,7 +188,7 @@ end
 ```
 
 ```rb
-class Posts::Archive < Excom::Command
+class Posts::Archive < Excom::Service
   use :context
   args :post
 
@@ -199,7 +205,7 @@ more. Where pundit governs only authorization logic, Excom's Sentries can deny e
 you find appropriate.
 
 ```rb
-class Posts::Destroy < Excom::Command
+class Posts::Destroy < Excom::Service
   use :context
   use :sentry
 
@@ -229,6 +235,36 @@ end
 
 - [`:assertions`](https://github.com/akuzko/excom/wiki/Plugins#assertions) - Provides `assert` method that
 can be used for different logic checks during service execution.
+
+- [`:failure_cause`](https://github.com/akuzko/excom/wiki/Plugins#failure_cause) - A small helper plugin
+that can be used to more explicit access to cause of service failure. You can use it if you feel that
+failed service shouldn't have a result, but a cause of the failure instead. Example:
+
+```rb
+class Posts::Create < Excom::Service
+  use :status, success: [:ok], failure: [:unprocessable_entity]
+  use :failure_cause, cause_method_name: :errors
+  
+  args :params
+
+  def execute!
+    if post.save
+      ok post.as_json
+    else
+      unprocessable_entity post.errors
+    end
+  end
+
+  private def post
+    @post ||= Post.new(params)
+  end
+end
+
+service = Posts::Create.(title: 'invalid')
+service.success? # => false
+service.result # => nil
+service.errors # => {title: ["is invalid"]}
+```
 
 - [`:dry_types`](https://github.com/akuzko/excom/wiki/Plugins#dry-types) - Allows you to use
 [dry-types](http://dry-rb.org/gems/dry-types/) attributes instead of default `args` and `opts`.

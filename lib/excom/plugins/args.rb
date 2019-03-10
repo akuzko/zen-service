@@ -10,6 +10,8 @@ module Excom
 
       @args = args
       @opts = opts
+
+      super()
     end
 
     def initialize_clone(*)
@@ -54,7 +56,7 @@ module Excom
       allowed = self.class.args_list.length
 
       if actual.length > allowed
-        fail ArgumentError, "wrong number of args (given #{actual.length}, expected 0..#{allowed})"
+        raise ArgumentError, "wrong number of args (given #{actual.length}, expected 0..#{allowed})"
       end
     end
 
@@ -62,7 +64,7 @@ module Excom
       unexpected = actual.keys - self.class.opts_list
 
       if unexpected.any?
-        fail ArgumentError, "wrong opts #{unexpected} given"
+        raise ArgumentError, "wrong opts #{unexpected} given"
       end
     end
 
@@ -72,6 +74,7 @@ module Excom
         service_class.send(:include, service_class::ArgMethods)
         service_class.args_list.replace args_list.dup
         service_class.opts_list.replace opts_list.dup
+        super
       end
 
       def arg_methods
@@ -83,6 +86,8 @@ module Excom
 
         argz.each_with_index do |name, i|
           arg_methods.send(:define_method, name){ @args[i] }
+
+          arg_methods.send(:define_method, "#{name}?"){ !!@args[i] }
         end
       end
 
@@ -91,6 +96,8 @@ module Excom
 
         optz.each do |name|
           arg_methods.send(:define_method, name){ @opts[name] }
+
+          arg_methods.send(:define_method, "#{name}?"){ !!@opts[name] }
         end
       end
 

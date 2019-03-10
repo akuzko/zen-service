@@ -5,8 +5,6 @@ RSpec.describe 'Excom::Plugins::Assetions' do
     use :assertions
     opts :foo
 
-    fail_with :too_low
-
     def execute!
       result { foo }
       assert { foo > 2 }
@@ -28,7 +26,6 @@ RSpec.describe 'Excom::Plugins::Assetions' do
     specify 'service fails' do
       expect(service.execute.result).to be nil
       expect(service).not_to be_success
-      expect(service.status).to be :too_low
     end
   end
 end

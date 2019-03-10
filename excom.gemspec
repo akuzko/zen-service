@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Artem Kuzko"]
   spec.email         = ["a.kuzko@gmail.com"]
 
-  spec.summary       = %q{Flexible and highly extensible Commands (Service Objects) for business logic}
-  spec.description   = %q{Flexible and highly extensible Commands (Service Objects) for business logic}
+  spec.summary       = %q{Flexible and highly extensible Services for business logic organization}
+  spec.description   = %q{Flexible and highly extensible Services for business logic organization}
   spec.homepage      = "https://github.com/akuzko/excom"
   spec.license       = "MIT"
 

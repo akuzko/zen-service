@@ -10,12 +10,12 @@ module Excom
     def fetch(name)
       require("excom/plugins/#{name}") unless plugins.key?(name)
 
-      plugins[name] || fail("extension `#{name}` is not registered")
+      plugins[name] || raise("extension `#{name}` is not registered")
     end
 
     def register(name, extension, options = {})
       if plugins.key?(name)
-        fail ArgumentError, "extension `#{name}` is already registered"
+        raise ArgumentError, "extension `#{name}` is already registered"
       end
       extension.singleton_class.send(:define_method, :excom_options) { options }
       plugins[name] = extension

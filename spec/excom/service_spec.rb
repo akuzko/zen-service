@@ -108,20 +108,7 @@ RSpec.describe Excom::Service do
       end
 
       it { is_expected.to be_success }
-      its(:status) { is_expected.to be :success }
       its(:result) { is_expected.to be :result }
-
-      context 'when status is passed' do
-        def_service do
-          def execute!
-            success(:ok) { :result }
-          end
-        end
-
-        it { is_expected.to be_success }
-        its(:status) { is_expected.to be :ok }
-        its(:result) { is_expected.to be :result }
-      end
     end
 
     describe '#failure' do
@@ -134,22 +121,7 @@ RSpec.describe Excom::Service do
       end
 
       it { is_expected.to be_failure }
-      its(:status) { is_expected.to be :failure }
-      its(:result) { is_expected.to be nil }
-      its(:cause)  { is_expected.to be :errors }
-
-      context 'when status is passed' do
-        def_service do
-          def execute!
-            failure(:unprocessable_entity) { :errors }
-          end
-        end
-
-        it { is_expected.to be_failure }
-        its(:status) { is_expected.to be :unprocessable_entity }
-        its(:result) { is_expected.to be nil }
-        its(:cause)  { is_expected.to be :errors }
-      end
+      its(:result) { is_expected.to be :errors }
     end
 
     describe '#result' do
@@ -163,7 +135,6 @@ RSpec.describe Excom::Service do
         end
 
         it { is_expected.to be_success }
-        its(:status) { is_expected.to eq :success }
         its(:result) { is_expected.to eq :result }
       end
 
@@ -175,7 +146,6 @@ RSpec.describe Excom::Service do
         end
 
         it { is_expected.to be_failure }
-        its(:status) { is_expected.to be :failure }
         its(:result) { is_expected.to be false }
       end
 
@@ -187,7 +157,6 @@ RSpec.describe Excom::Service do
         end
 
         it { is_expected.to be_success }
-        its(:status) { is_expected.to eq :success }
         its(:result) { is_expected.to eq :result }
       end
 
@@ -199,24 +168,8 @@ RSpec.describe Excom::Service do
         end
 
         it { is_expected.to be_failure }
-        its(:status) { is_expected.to eq :failure }
         its(:result) { is_expected.to be nil }
       end
-    end
-
-    describe '.fail_with' do
-      def_service do
-        fail_with :total_failure
-
-        def execute!
-          failure!
-        end
-      end
-
-      subject(:service) { build_service.execute }
-
-      it { is_expected.to be_failure }
-      its(:status) { is_expected.to eq :total_failure }
     end
 
     describe '#execute!' do
@@ -256,7 +209,7 @@ RSpec.describe Excom::Service do
         args :arg
 
         def execute!
-          success(:ok) { arg * 2 }
+          arg * 2
         end
       end
 
@@ -272,11 +225,10 @@ RSpec.describe Excom::Service do
         end
       end
 
-      specify 'both :status and :result can be delegated via ~@ method' do
+      specify ':result can be delegated via ~@ method' do
         other_service = other_service_class.(5)
 
         expect(other_service).to be_success
-        expect(other_service.status).to be :ok
         expect(other_service.result).to be 10
       end
     end
