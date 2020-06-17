@@ -14,6 +14,12 @@ class Show < Excom::Service
   end
 end
 
+class MyErrors < Hash
+  def add(key, message)
+    (self[key] ||= []) << message
+  end
+end
+
 class Abilities < Excom::Service
   use :abilities
 
@@ -38,6 +44,7 @@ end
 
 class Save < Excom::Service
   use :status
+  use :validation, errors_class: MyErrors
   use :assertions
 
   args :foo
@@ -50,6 +57,11 @@ class Save < Excom::Service
   def execute!
     result { foo * 2 }
     assert { foo > bar }
+  end
+
+  private def validate
+    errors.add(:foo, 'invalid') unless abilities.can?(:save)
+    errors.add(:bar, 'too large') unless abilities.can?(:bar)
   end
 
   private def abilities
