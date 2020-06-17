@@ -108,6 +108,10 @@ module Excom
       def opts_list
         @opts_list ||= []
       end
+
+      def from(service)
+        new(*service.send(:args), **service.send(:opts))
+      end
     end
   end
 end

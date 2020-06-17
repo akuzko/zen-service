@@ -3,7 +3,6 @@ module Excom
     autoload :Pluggable, 'excom/plugins/pluggable'
     autoload :Executable, 'excom/plugins/executable'
     autoload :Context, 'excom/plugins/context'
-    autoload :Sentry, 'excom/plugins/sentry'
 
     module_function
 

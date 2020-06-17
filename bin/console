@@ -3,10 +3,7 @@
 require "bundler/setup"
 require "excom"
 
-Excom::Sentry.deny_with :unauthorized
-
 class Show < Excom::Service
-  use :sentry, class: 'MySentry'
   use :caching
   use :dry_types
 
@@ -17,30 +14,34 @@ class Show < Excom::Service
   end
 end
 
-class MySentry < Excom::Sentry
-  def execute?
-    foo != 5
+class Abilities < Excom::Service
+  use :abilities
+
+  opts :foo, :bar, :threshold
+
+  deny_with :unauthorized do
+    def save?
+      foo != 6
+    end
   end
 
-  def save?
-    sentry(:save).execute?
-  end
-end
+  deny_with :unprocessable_entity do
+    def save?
+      foo != 7
+    end
 
-class MyErrors < Hash
-  def add(key, message)
-    (self[key] ||= []) << message
+    def bar?
+      bar && bar > threshold
+    end
   end
 end
 
 class Save < Excom::Service
   use :status
-  use :sentry, delegate: [:threshold]
   use :assertions
-  use :errors, errors_class: MyErrors
 
   args :foo
-  opts :bar, :baz
+  opts :bar
 
   def foo
     super || 6
@@ -49,27 +50,10 @@ class Save < Excom::Service
   def execute!
     result { foo * 2 }
     assert { foo > bar }
-    errors.add(:foo, 'invalid') if foo > 5
   end
 
-  def threshold
-    0
-  end
-
-  sentry do
-    def execute?
-      foo != 6
-    end
-
-    deny_with :unprocessable_entity do
-      def execute?
-        foo > 0
-      end
-
-      def bar?
-        bar && bar > threshold
-      end
-    end
+  private def abilities
+    @abilities ||= Abilities.new(foo: foo, bar: bar, threshold: 0)
   end
 end
 

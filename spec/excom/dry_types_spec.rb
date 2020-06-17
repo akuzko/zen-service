@@ -4,18 +4,11 @@ require 'dry-struct'
 RSpec.describe 'Excom::Plugins::DryTypes' do
   def_service do
     use :dry_types
-    use :sentry
 
     attribute :foo, Dry::Types['integer']
 
     def execute!
       foo * 2
-    end
-
-    sentry do
-      def execute?
-        foo > 0
-      end
     end
   end
 
@@ -28,10 +21,6 @@ RSpec.describe 'Excom::Plugins::DryTypes' do
 
     it 'executes properly' do
       expect(service.execute.result).to eq 4
-    end
-
-    it 'delegates attributes to sentry' do
-      expect(service.sentry_hash).to eq('execute' => true)
     end
 
     describe '#with_attributes' do

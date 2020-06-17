@@ -41,15 +41,17 @@ module Todos
   class Update < Excom::Service
     # `use` class method adds a plugin to a service with specified options
     use :status, success: [:ok], failure: [:unprocessable_entity]
-    
+
     args :todo
     opts :params
 
+    delegate :errors, to: :todo
+
     def execute!
       if todo.update(params)
-        ok todo.as_json
+        ok todo
       else
-        unprocessable_entity todo.errors
+        unprocessable_entity
       end
     end
   end
@@ -58,9 +60,13 @@ end
 # app/controllers/todos/controller
 class TodosController < ApplicationController
   def update
-    service = Todos::Update.(todo, params: todo_params)
+    service = Todos::Update.new(todo, params: todo_params)
 
-    render json: todo.result, status: service.status
+    if service.execute.success?
+      render json: Todos::Show.(service.result)
+    else
+      render json: service.errors, status: service.status
+    end
   end
 end
 ```
@@ -151,7 +157,7 @@ class Posts::Update < Excom::Service
   use :status,
     success: [:ok],
     failure: [:unprocessable_entity]
-  
+
   args :post, :params
 
   def execute!
@@ -198,39 +204,44 @@ class Posts::Archive < Excom::Service
 end
 ```
 
-- [`:sentry`](https://github.com/akuzko/excom/wiki/Plugins#sentry) - Allows you to define sentry logic that
-will allow or deny service's execution or other related checks. This logic can be defined inline in service
-classes or in dedicated Sentry classes. Much like [pundit](https://github.com/elabs/pundit) Policies, but
-more. Where pundit governs only authorization logic, Excom's Sentries can deny execution with any reason
-you find appropriate.
+- [`:abilities`](https://github.com/akuzko/excom/wiki/Plugins#abilities) - Allows you to define permission
+checks within a service that can be used in other services for checks and guard violations. Much like
+[pundit](https://github.com/elabs/pundit) Policies, but more. Where pundit governs only authorization logic,
+Excom's "Ability" services can have any denial reason you find appropriate, and declare logic for
+different denial reasons in single place. It also defines `#execute!` method that will result in
+hash with all permission checks.
 
 ```rb
-class Posts::Destroy < Excom::Service
-  use :context
-  use :sentry
+class Posts::Abilities < Excom::Service
+  use :abilities
 
-  args :post
+  args :post, :user
 
-  def execute!
-    post.destroy
-  end
-
-  sentry delegate: [:context] do
-    deny_with :unauthorized
-
-    def execute?
-      # only author can destroy a post
-      post.author_id == context[:current_user].id
+  deny_with :unauthorized do
+    def publish?
+      # only author can publish a post
+      post.author_id == user.id
     end
 
-    deny_with :unprocessable_entity do
-      def execute?
-        # disallow to destroy posts that are older than 1 hour
-        (post.created_at + 1.hour).past?
-      end
+    def delete?
+      publish?
+    end
+  end
+
+  deny_with :unprocessable_entity do
+    def delete?
+      # disallow to destroy posts that are older than 1 hour
+      (post.created_at + 1.hour).past?
     end
   end
 end
+
+abilities = Posts::Abilities.new(outdated_post, user)
+abilities.can?(:publish)     # => true
+abilities.can?(:delete)      # => false
+abilities.why_cant?(:delete) # => :unprocessable_entity
+abilities.guard!(:delete)    # => raises Excom::Plugins::Abilities::GuardViolationError, :unprocessable_entity
+abilities.execute.result     # => {'publish' => true, 'delete' => false}
 ```
 
 - [`:assertions`](https://github.com/akuzko/excom/wiki/Plugins#assertions) - Provides `assert` method that
@@ -244,7 +255,7 @@ failed service shouldn't have a result, but a cause of the failure instead. Exam
 class Posts::Create < Excom::Service
   use :status, success: [:ok], failure: [:unprocessable_entity]
   use :failure_cause, cause_method_name: :errors
-  
+
   args :params
 
   def execute!

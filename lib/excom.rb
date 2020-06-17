@@ -6,8 +6,6 @@ module Excom
 
   extend Plugins::Context::ExcomMethods
 
-  Sentry = Plugins::Sentry::Sentinel
-
   UNDEFINED = Object.new.tap do |obj|
     def obj.to_s
       'UNDEFINED'.freeze
