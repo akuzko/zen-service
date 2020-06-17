@@ -5,7 +5,7 @@ RSpec.describe 'Excom::Plugins::Abilities' do
   def_service do
     use :abilities
 
-    opts :user, :post
+    attributes :user, :post
 
     deny_with :unauthorized do
       def publish?

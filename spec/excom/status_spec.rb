@@ -49,7 +49,7 @@ RSpec.describe 'Excom::Plugins::Status' do
     context 'when status is passed' do
       def_service do
         use :status
-         
+
         def execute!
           failure(:unprocessable_entity) { :errors }
         end
@@ -120,14 +120,14 @@ RSpec.describe 'Excom::Plugins::Status' do
       its(:result) { is_expected.to be nil }
     end
   end
-  
+
   describe 'status helpers' do
     def_service do
       use :status,
         success: [:ok],
         failure: [:not_ok]
 
-      opts :all_good
+      attributes :all_good
 
       def execute!
         if all_good?
@@ -162,7 +162,7 @@ RSpec.describe 'Excom::Plugins::Status' do
   describe 'status propagation in service execution delegation' do
     def_service do
       use :status
-      args :arg
+      attributes :arg
 
       def execute!
         success(:ok) { arg * 2 }
@@ -174,7 +174,7 @@ RSpec.describe 'Excom::Plugins::Status' do
 
       Class.new(Excom::Service) do
         use :status
-        args :arg
+        attributes :arg
 
         define_method(:execute!) do
           ~klass.(arg)

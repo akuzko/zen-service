@@ -42,8 +42,7 @@ module Todos
     # `use` class method adds a plugin to a service with specified options
     use :status, success: [:ok], failure: [:unprocessable_entity]
 
-    args :todo
-    opts :params
+    attributes :todo, :params
 
     delegate :errors, to: :todo
 
@@ -73,19 +72,20 @@ end
 
 However, even this basic example can be highly optimized by using Excom extensions and helper methods.
 
-### Service arguments and options
+### Service attributes
 
-Read full version on [wiki](https://github.com/akuzko/excom/wiki#instantiating-service-with-arguments-and-options).
+Read full version on [wiki](https://github.com/akuzko/excom/wiki#instantiating-service-with-attributes).
 
-Excom services can be initialized with _arguments_ and _options_ (named arguments). To specify list
-of available arguments and options, use `args` and `opts` class methods. All arguments and options
-are optional during service initialization. However, you cannot pass more arguments to service or
-options that were not declared with `opts` method.
+Excom services are initialized with _attributes_. To specify list of available attributes, use `attributes`
+class methods. All attributes are optional during service initialization. It is possible to omit keys during
+initialization, and pass attributes as parameters - in this case attributes will be filled in correspondance
+to the order they were defined. However, you cannot pass more attributes than declared attributes list, as
+well as cannot pass single attribute multiple times (as parameter and as named attribute) or attributes that
+were not declared with `attributes` class method.
 
 ```rb
 class MyService < Excom::Service
-  args :foo
-  opts :bar
+  attributes :foo, :bar
 
   def execute!
     # do something
@@ -100,7 +100,7 @@ s1 = MyService.new
 s1.foo # => 5
 s1.bar # => nil
 
-s2 = s1.with_args(1).with_opts(bar: 2)
+s2 = s1.with_attributes(foo: 1, bar: 2)
 s2.foo # => 1
 s2.bar # => 2
 ```
@@ -117,7 +117,7 @@ Example:
 
 ```rb
 class MyService < Excom::Service
-  args :foo
+  attributes :foo
 
   def execute!
     if foo > 2
@@ -158,7 +158,7 @@ class Posts::Update < Excom::Service
     success: [:ok],
     failure: [:unprocessable_entity]
 
-  args :post, :params
+  attributes :post, :params
 
   def execute!
     if post.update(params)
@@ -196,7 +196,8 @@ end
 ```rb
 class Posts::Archive < Excom::Service
   use :context
-  args :post
+
+  attributes :post
 
   def execute!
     post.update(archived: true, archived_by: context[:current_user])
@@ -215,7 +216,7 @@ hash with all permission checks.
 class Posts::Abilities < Excom::Service
   use :abilities
 
-  args :post, :user
+  attributes :post, :user
 
   deny_with :unauthorized do
     def publish?
@@ -256,7 +257,7 @@ class Posts::Create < Excom::Service
   use :status, success: [:ok], failure: [:unprocessable_entity]
   use :failure_cause, cause_method_name: :errors
 
-  args :params
+  attributes :params
 
   def execute!
     if post.save
@@ -278,7 +279,7 @@ service.errors # => {title: ["is invalid"]}
 ```
 
 - [`:dry_types`](https://github.com/akuzko/excom/wiki/Plugins#dry-types) - Allows you to use
-[dry-types](http://dry-rb.org/gems/dry-types/) attributes instead of default `args` and `opts`.
+[dry-types](http://dry-rb.org/gems/dry-types/) attributes instead of default `attributes`.
 
 - [`:caching`](https://github.com/akuzko/excom/wiki/Plugins#caching) - Simple plugin that will prevent
 re-execution of service if it already has been executed, and will immediately return result.

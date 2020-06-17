@@ -23,7 +23,7 @@ end
 class Abilities < Excom::Service
   use :abilities
 
-  opts :foo, :bar, :threshold
+  attributes :foo, :bar, :threshold
 
   deny_with :unauthorized do
     def save?
@@ -47,8 +47,7 @@ class Save < Excom::Service
   use :validation, errors_class: MyErrors
   use :assertions
 
-  args :foo
-  opts :bar
+  attributes :foo, :bar
 
   def foo
     super || 6
@@ -61,7 +60,7 @@ class Save < Excom::Service
 
   private def validate
     errors.add(:foo, 'invalid') unless abilities.can?(:save)
-    errors.add(:bar, 'too large') unless abilities.can?(:bar)
+    errors.add(:bar, 'too small') unless abilities.can?(:bar)
   end
 
   private def abilities

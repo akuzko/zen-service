@@ -23,7 +23,7 @@ RSpec.describe 'Excom::Plugins::Rescue' do
     describe 'clearing :error for clone' do
       it 'clears error' do
         service.execute(rescue: true)
-        cloned = service.with_args
+        cloned = service.with_attributes({})
         expect(cloned.error).to be nil
       end
     end

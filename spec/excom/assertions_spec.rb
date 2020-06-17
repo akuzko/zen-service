@@ -3,7 +3,8 @@ require 'spec_helper'
 RSpec.describe 'Excom::Plugins::Assetions' do
   def_service do
     use :assertions
-    opts :foo
+
+    attributes :foo
 
     def execute!
       result { foo }

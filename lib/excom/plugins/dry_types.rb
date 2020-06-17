@@ -15,7 +15,7 @@ module Excom
     def initialize(attrs)
       @attributes = self.class::Attributes.new(attrs)
 
-      super
+      super(@attributes)
     end
 
     def initialize_clone(*)
@@ -29,37 +29,23 @@ module Excom
       end
     end
 
-    # args and opts overloads
+    # :attributes plugin overloads
     private def resolve_args!(args)
-      [nil, nil]
+      args[0]
     end
 
-    private def assert_valid_args!(*)
-    end
-
-    private def assert_valid_opts!(*)
-    end
-
-    def with_args(*)
-      raise("`with_args' method is not available with :dry_types plugin. use `with_attributes' method instead")
-    end
-
-    def with_opts(*)
-      raise("`with_opts' method is not available with :dry_types plugin. use `with_attributes' method instead")
+    private def assert_valid_attributes!(attrs)
+      attrs
     end
 
     module ClassMethods
-      def args(*)
-        raise("`args' method is not available with :dry_types plugin. use `attribute' method instead")
-      end
-
-      def opts(*)
-        raise("`args' method is not available with :dry_types plugin. use `attribute' method instead")
+      def attributes(*)
+        raise("`attribute' method is not available with :dry_types plugin. use `attribute' method instead")
       end
 
       def attribute(name, *args)
         const_get(:Attributes).send(:attribute, name, *args)
-        arg_methods.send(:define_method, name){ @attributes.send(name) }
+        attribute_methods.send(:define_method, name){ @attributes.send(name) }
       end
     end
   end

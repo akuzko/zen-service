@@ -3,7 +3,8 @@ require 'spec_helper'
 RSpec.describe 'Excom::Plugins::Caching' do
   def_service do
     use :caching
-    opts :foo
+
+    attributes :foo
 
     def execute!
       calculate_result

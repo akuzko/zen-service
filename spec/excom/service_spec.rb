@@ -1,98 +1,75 @@
 require 'spec_helper'
 
 RSpec.describe Excom::Service do
-  describe 'args' do
+  describe 'attributes' do
     def_service do
-      args :foo, :bar
-      opts :baz, :bak
+      attributes :foo, :bar
+      attributes :baz
     end
 
     describe 'inheritance' do
       let(:inherited_service_class) do
         Class.new(service_class) do
-          args :foobar
-          opts :bazbak
+          attributes :bak
         end
       end
 
-      it 'inherits args and opts list' do
-        expect(service_class.args_list).to eq [:foo, :bar]
-        expect(service_class.opts_list).to eq [:baz, :bak]
-        expect(inherited_service_class.args_list).to eq [:foo, :bar, :foobar]
-        expect(inherited_service_class.opts_list).to eq [:baz, :bak, :bazbak]
+      it 'inherits attributes list' do
+        expect(service_class.attributes_list).to eq [:foo, :bar, :baz]
+        expect(inherited_service_class.attributes_list).to eq [:foo, :bar, :baz, :bak]
       end
 
       specify 'reader helpers' do
         base_service = service_class.new
         inherited_service = inherited_service_class.new
 
-        expect(base_service).not_to respond_to :foobar
-        expect(base_service).not_to respond_to :bazbak
-        expect(inherited_service).to respond_to :foobar
-        expect(inherited_service).to respond_to :bazbak
+        expect(base_service).not_to respond_to :bak
+        expect(inherited_service).to respond_to :bak
       end
     end
 
     context 'when correctly initialized' do
-      it 'sets service args and opts' do
+      it 'allows to pass attributes as options' do
+        service = build_service(foo: 1, baz: 2)
+
+        expect(service.foo).to eq 1
+        expect(service.bar).to be nil
+        expect(service.baz).to eq 2
+      end
+
+      it 'allows to pass attributes as parameters' do
         service = build_service(1, baz: 2)
 
         expect(service.foo).to eq 1
         expect(service.bar).to be nil
         expect(service.baz).to eq 2
-        expect(service.bak).to be nil
       end
     end
 
-    context 'when too many args' do
+    context 'when too many attributes' do
       it 'fails with an error' do
-        expect{ build_service(1, 2, 3) }.to raise_error(ArgumentError)
+        expect{ build_service(1, 2, 3, 4) }.to raise_error(ArgumentError)
       end
     end
 
-    context 'when invalid opts' do
+    context 'when invalid attributes' do
       it 'fails with an error' do
         expect{ build_service(1, 2, paw: 'wow') }.to raise_error(ArgumentError)
       end
     end
 
-    describe 'opts resolution' do
-      it 'sends unkown options to args, if there is place for it' do
-        service = build_service(1, baz: 2, paw: 'wow')
-        expect(service.foo).to eq 1
-        expect(service.bar).to eq(paw: 'wow')
-        expect(service.baz).to eq 2
-      end
-    end
+    describe '#with_attributes' do
+      let(:service) { build_service(foo: 1) }
 
-    describe '#with_args' do
-      let(:service) { build_service(1) }
-
-      it 'generates a new service with replaced args' do
-        args_service = service.with_args(2, 3)
-        expect(service.foo).to eq 1
-        expect(args_service.foo).to eq 2
-        expect(args_service.bar).to eq 3
+      it 'generates a new service with merged attributes' do
+        attrs_service = service.with_attributes(bar: 2)
+        expect(attrs_service.foo).to eq 1
+        expect(attrs_service.bar).to eq 2
       end
 
       it 'clears execution flags' do
         service.execute
-        expect(service.with_args(2, 3)).not_to be_executed
-      end
-    end
-
-    describe '#with_opts' do
-      let(:service) { build_service(baz: 1) }
-
-      it 'generates a new service with merged opts' do
-        opts_service = service.with_opts(bak: 2)
-        expect(opts_service.baz).to eq 1
-        expect(opts_service.bak).to eq 2
-      end
-
-      it 'clears execution flags' do
-        service.execute
-        expect(service.with_opts(bak: 2)).not_to be_executed
+        expect(service.with_attributes(bar: 2)).not_to be_executed
       end
     end
   end
@@ -186,7 +163,7 @@ RSpec.describe Excom::Service do
 
     describe '.call and .[] helpers' do
       def_service do
-        args :arg
+        attributes :arg
 
         def execute!
           arg
@@ -206,7 +183,7 @@ RSpec.describe Excom::Service do
 
     describe 'service execution delegation' do
       def_service do
-        args :arg
+        attributes :arg
 
         def execute!
           arg * 2
@@ -217,7 +194,7 @@ RSpec.describe Excom::Service do
         klass = service_class
 
         Class.new(Excom::Service) do
-          args :arg
+          attributes :arg
 
           define_method(:execute!) do
             ~klass.(arg)

@@ -31,15 +31,9 @@ RSpec.describe 'Excom::Plugins::DryTypes' do
     end
   end
 
-  describe 'overriding and deprecation of args and opts' do
-    it 'raises errors for .args and .opts methods' do
-      expect{ service_class.args }.to raise_error(/method is not available/)
-      expect{ service_class.opts }.to raise_error(/method is not available/)
-    end
-
-    it 'raises errors for #with_args and #with_opts methods' do
-      expect{ service.with_args }.to raise_error(/method is not available/)
-      expect{ service.with_opts }.to raise_error(/method is not available/)
+  describe 'overriding and deprecation of :attributes' do
+    it 'raises errors for .attributes method' do
+      expect{ service_class.attributes }.to raise_error(/method is not available/)
     end
   end
 end

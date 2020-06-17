@@ -3,6 +3,6 @@ module Excom
     extend Excom::Plugins::Pluggable
 
     use :executable
-    use :args
+    use :attributes
   end
 end
