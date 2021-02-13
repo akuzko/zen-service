@@ -39,19 +39,12 @@ The very basic usage of `Excom` services can be shown with following example:
 # app/services/todos/update.rb
 module Todos
   class Update < Excom::Service
-    # `use` class method adds a plugin to a service with specified options
-    use :status, success: [:ok], failure: [:unprocessable_entity]
-
     attributes :todo, :params
 
     delegate :errors, to: :todo
 
     def execute!
-      if todo.update(params)
-        ok todo
-      else
-        unprocessable_entity
-      end
+      todo.update(params)
     end
   end
 end
@@ -160,11 +153,13 @@ class Posts::Update < Excom::Service
 
   attributes :post, :params
 
+  delegate :errors, to: :post
+
   def execute!
     if post.update(params)
-      ok post.as_json
+      ok { post.as_json }
     else
-      unprocessable_entity post.errors
+      unprocessable_entity
     end
   end
 end
@@ -176,8 +171,8 @@ service.status # => :ok
 service.result # => {'id' => 1, ...}
 ```
 
-Note that unlike `success`, `failure`, or `result` methods, status helpers accept result value
-as its argument rather than yield to a block to get it.
+Note that just like `success`, `failure`, or `result` methods, status helpers accept result value
+as result of yielded block.
 
 - [`:context`](https://github.com/akuzko/excom/wiki/Plugins#context) - Allows you to set an execution
 context for a block that will be available to any service that uses this plugin via `context` method.
@@ -248,35 +243,6 @@ abilities.execute.result     # => {'publish' => true, 'delete' => false}
 - [`:assertions`](https://github.com/akuzko/excom/wiki/Plugins#assertions) - Provides `assert` method that
 can be used for different logic checks during service execution.
 
-- [`:failure_cause`](https://github.com/akuzko/excom/wiki/Plugins#failure_cause) - A small helper plugin
-that can be used to more explicit access to cause of service failure. You can use it if you feel that
-failed service shouldn't have a result, but a cause of the failure instead. Example:
-
-```rb
-class Posts::Create < Excom::Service
-  use :status, success: [:ok], failure: [:unprocessable_entity]
-  use :failure_cause, cause_method_name: :errors
-
-  attributes :params
-
-  def execute!
-    if post.save
-      ok post.as_json
-    else
-      unprocessable_entity post.errors
-    end
-  end
-
-  private def post
-    @post ||= Post.new(params)
-  end
-end
-
-service = Posts::Create.(title: 'invalid')
-service.success? # => false
-service.result # => nil
-service.errors # => {title: ["is invalid"]}
-```
 
 - [`:dry_types`](https://github.com/akuzko/excom/wiki/Plugins#dry-types) - Allows you to use
 [dry-types](http://dry-rb.org/gems/dry-types/) attributes instead of default `attributes`.
