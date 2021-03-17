@@ -29,8 +29,8 @@ RSpec.describe 'Excom::Plugins::Validation' do
         use :validation
       end
 
-      it 'uses Hash by default' do
-        expect(service.execute.errors).to be_an_instance_of(Hash)
+      it 'uses Validation::Errors by default' do
+        expect(service.execute.errors).to be_an_instance_of(Excom::Plugins::Validation::Errors)
       end
     end
 

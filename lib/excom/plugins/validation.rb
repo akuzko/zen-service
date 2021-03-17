@@ -1,7 +1,13 @@
 module Excom
   module Plugins::Validation
+    class Errors < Hash
+      def add(key, message)
+        (self[key] ||= []).push(message)
+      end
+    end
+
     Plugins.register :validation, self,
-      default_options: {errors_class: Hash}
+      default_options: { errors_class: Errors }
 
     def self.used(service_class, *)
       service_class.add_execution_prop(:errors)
@@ -15,11 +21,7 @@ module Excom
     def execute(*)
       return super if valid?
 
-      if self.class.using?(:status)
-        failure!(:invalid)
-      else
-        failure!
-      end
+      failure!(status: :invalid)
 
       self
     end

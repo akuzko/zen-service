@@ -16,15 +16,15 @@ RSpec.describe 'Excom::Plugins::Rescue' do
       expect{ service.execute(rescue: true) }.not_to raise_error
       expect(service).not_to be_executed
       expect(service).to be_error
-      expect(service.status).to eq :error
-      expect(service.error.message).to eq 'foo'
+      expect(service.status).to eq(:error)
+      expect(service.error.message).to eq('foo')
     end
 
     describe 'clearing :error for clone' do
       it 'clears error' do
         service.execute(rescue: true)
         cloned = service.with_attributes({})
-        expect(cloned.error).to be nil
+        expect(cloned.error).to be(nil)
       end
     end
   end

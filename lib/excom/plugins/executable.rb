@@ -86,21 +86,21 @@ module Excom
       state.executed = false
     end
 
-    private def success
+    private def success(**)
       assign_successful_state
       assign_successful_result(yield)
     end
 
-    private def failure
+    private def failure(**)
       assign_failed_state
       assign_failed_result(yield)
     end
 
-    private def success!
+    private def success!(**)
       assign_successful_state
     end
 
-    private def failure!
+    private def failure!(**)
       assign_failed_state
     end
 

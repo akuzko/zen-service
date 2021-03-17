@@ -4,12 +4,12 @@ require "bundler/setup"
 require "excom"
 
 class Show < Excom::Service
-  use :caching
-  use :dry_types
+  use :execution_cache
 
-  attribute :foo, Dry::Types['integer']
+  attributes :foo
 
   def execute!
+    sleep(1)
     {foo: foo}
   end
 end
@@ -20,8 +20,8 @@ class MyErrors < Hash
   end
 end
 
-class Abilities < Excom::Service
-  use :abilities
+class Policies < Excom::Service
+  use :policies
 
   attributes :foo, :bar, :threshold
 
@@ -59,12 +59,12 @@ class Save < Excom::Service
   end
 
   private def validate
-    errors.add(:foo, 'invalid') unless abilities.can?(:save)
-    errors.add(:bar, 'too small') unless abilities.can?(:bar)
+    errors.add(:foo, 'invalid') unless policies.can?(:save)
+    errors.add(:bar, 'too small') unless policies.can?(:bar)
   end
 
-  private def abilities
-    @abilities ||= Abilities.new(foo: foo, bar: bar, threshold: 0)
+  private def policies
+    @policies ||= Policies.new(foo: foo, bar: bar, threshold: 0)
   end
 end
 

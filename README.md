@@ -31,7 +31,7 @@ common for describing classes for business logic, so it was renamed in this gem 
 
 General idea behind every `excom` service is simple: each service can have arguments,
 options (named arguments), and should define `execute!` method that is called during
-service execution. Executed service has `status` and `result`.
+service execution. Executed service responds to `success?` and has `result`.
 
 The very basic usage of `Excom` services can be shown with following example:
 
@@ -70,7 +70,7 @@ However, even this basic example can be highly optimized by using Excom extensio
 Read full version on [wiki](https://github.com/akuzko/excom/wiki#instantiating-service-with-attributes).
 
 Excom services are initialized with _attributes_. To specify list of available attributes, use `attributes`
-class methods. All attributes are optional during service initialization. It is possible to omit keys during
+class method. All attributes are optional during service initialization. It is possible to omit keys during
 initialization, and pass attributes as parameters - in this case attributes will be filled in correspondance
 to the order they were defined. However, you cannot pass more attributes than declared attributes list, as
 well as cannot pass single attribute multiple times (as parameter and as named attribute) or attributes that
@@ -109,21 +109,27 @@ were used, result and status will be set based on `execute!` method's return val
 Example:
 
 ```rb
-class MyService < Excom::Service
-  attributes :foo
+class Users::Create < Excom::Service
+  attributes :params
 
   def execute!
-    if foo > 2
-      success { foo * 2 }
-    else
-      failure { -1 }
-    end
+    result { User.create(params) } # explicit result assignment
+
+    send_invitation_email if success?
   end
 end
 
-service = MyService.new(3)
+class Users::Update < Excom::Service
+  attributes :user, :params
+
+  def execute!
+    user.update(params) # implicit result assignment
+  end
+end
+
+service = Users::Create.new(valid_params)
 service.execute.success? # => true
-service.result # => 6
+service.result # => instance of User
 ```
 
 ### Core API
@@ -200,16 +206,16 @@ class Posts::Archive < Excom::Service
 end
 ```
 
-- [`:abilities`](https://github.com/akuzko/excom/wiki/Plugins#abilities) - Allows you to define permission
+- [`:policies`](https://github.com/akuzko/excom/wiki/Plugins#policies) - Allows you to define permission
 checks within a service that can be used in other services for checks and guard violations. Much like
-[pundit](https://github.com/elabs/pundit) Policies, but more. Where pundit governs only authorization logic,
-Excom's "Ability" services can have any denial reason you find appropriate, and declare logic for
-different denial reasons in single place. It also defines `#execute!` method that will result in
+[pundit](https://github.com/elabs/pundit) Policies (hence the name), but more. Where pundit governs only
+authorization logic, Excom's "policy" services can have any denial reason you find appropriate, and declare
+logic for different denial reasons in single place. It also defines `#execute!` method that will result in
 hash with all permission checks.
 
 ```rb
-class Posts::Abilities < Excom::Service
-  use :abilities
+class Posts::Policies < Excom::Service
+  use :policies
 
   attributes :post, :user
 
@@ -232,22 +238,18 @@ class Posts::Abilities < Excom::Service
   end
 end
 
-abilities = Posts::Abilities.new(outdated_post, user)
-abilities.can?(:publish)     # => true
-abilities.can?(:delete)      # => false
-abilities.why_cant?(:delete) # => :unprocessable_entity
-abilities.guard!(:delete)    # => raises Excom::Plugins::Abilities::GuardViolationError, :unprocessable_entity
-abilities.execute.result     # => {'publish' => true, 'delete' => false}
+policies = Posts::Policies.new(outdated_post, user)
+policies.can?(:publish)     # => true
+policies.can?(:delete)      # => false
+policies.why_cant?(:delete) # => :unprocessable_entity
+policies.guard!(:delete)    # => raises Excom::Plugins::Policies::GuardViolationError, :unprocessable_entity
+policies.execute.result     # => {'publish' => true, 'delete' => false}
 ```
 
 - [`:assertions`](https://github.com/akuzko/excom/wiki/Plugins#assertions) - Provides `assert` method that
 can be used for different logic checks during service execution.
 
-
-- [`:dry_types`](https://github.com/akuzko/excom/wiki/Plugins#dry-types) - Allows you to use
-[dry-types](http://dry-rb.org/gems/dry-types/) attributes instead of default `attributes`.
-
-- [`:caching`](https://github.com/akuzko/excom/wiki/Plugins#caching) - Simple plugin that will prevent
+- [`:execution_cache`](https://github.com/akuzko/excom/wiki/Plugins#execution_cache) - Simple plugin that will prevent
 re-execution of service if it already has been executed, and will immediately return result.
 
 - [`:rescue`](https://github.com/akuzko/excom/wiki/Plugins#rescue) - Provides `:rescue` execution option.

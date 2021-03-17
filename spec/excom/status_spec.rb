@@ -13,21 +13,21 @@ RSpec.describe 'Excom::Plugins::Status' do
     end
 
     it { is_expected.to be_success }
-    its(:status) { is_expected.to be :success }
-    its(:result) { is_expected.to be :result }
+    its(:status) { is_expected.to be(:success) }
+    its(:result) { is_expected.to be(:result) }
 
     context 'when status is passed' do
       def_service do
         use :status
 
         def execute!
-          success(:ok) { :result }
+          success(status: :ok) { :result }
         end
       end
 
       it { is_expected.to be_success }
-      its(:status) { is_expected.to be :ok }
-      its(:result) { is_expected.to be :result }
+      its(:status) { is_expected.to be(:ok) }
+      its(:result) { is_expected.to be(:result) }
     end
   end
 
@@ -43,21 +43,21 @@ RSpec.describe 'Excom::Plugins::Status' do
     end
 
     it { is_expected.to be_failure }
-    its(:status) { is_expected.to be :failure }
-    its(:result) { is_expected.to be :errors }
+    its(:status) { is_expected.to be(:failure) }
+    its(:result) { is_expected.to be(:errors) }
 
     context 'when status is passed' do
       def_service do
         use :status
 
         def execute!
-          failure(:unprocessable_entity) { :errors }
+          failure(status: :unprocessable_entity) { :errors }
         end
       end
 
       it { is_expected.to be_failure }
-      its(:status) { is_expected.to be :unprocessable_entity }
-      its(:result) { is_expected.to be :errors }
+      its(:status) { is_expected.to be(:unprocessable_entity) }
+      its(:result) { is_expected.to be(:errors) }
     end
   end
 
@@ -74,8 +74,8 @@ RSpec.describe 'Excom::Plugins::Status' do
       end
 
       it { is_expected.to be_success }
-      its(:status) { is_expected.to eq :success }
-      its(:result) { is_expected.to eq :result }
+      its(:status) { is_expected.to eq(:success) }
+      its(:result) { is_expected.to eq(:result) }
     end
 
     context 'when block yields to falsy value' do
@@ -88,8 +88,8 @@ RSpec.describe 'Excom::Plugins::Status' do
       end
 
       it { is_expected.to be_failure }
-      its(:status) { is_expected.to be :failure }
-      its(:result) { is_expected.to be false }
+      its(:status) { is_expected.to be(:failure) }
+      its(:result) { is_expected.to be(false) }
     end
 
     context 'implicit success' do
@@ -102,8 +102,8 @@ RSpec.describe 'Excom::Plugins::Status' do
       end
 
       it { is_expected.to be_success }
-      its(:status) { is_expected.to eq :success }
-      its(:result) { is_expected.to eq :result }
+      its(:status) { is_expected.to eq(:success) }
+      its(:result) { is_expected.to eq(:result) }
     end
 
     context 'implicit failure' do
@@ -116,8 +116,8 @@ RSpec.describe 'Excom::Plugins::Status' do
       end
 
       it { is_expected.to be_failure }
-      its(:status) { is_expected.to eq :failure }
-      its(:result) { is_expected.to be nil }
+      its(:status) { is_expected.to eq(:failure) }
+      its(:result) { is_expected.to be(nil) }
     end
   end
 
@@ -131,9 +131,9 @@ RSpec.describe 'Excom::Plugins::Status' do
 
       def execute!
         if all_good?
-          ok :fine
+          ok { :fine }
         else
-          not_ok :error
+          not_ok { :error }
         end
       end
     end
@@ -142,8 +142,8 @@ RSpec.describe 'Excom::Plugins::Status' do
       let(:service) { build_service(all_good: true) }
 
       it 'executes correctly' do
-        expect(service.execute.result).to be :fine
-        expect(service.status).to be :ok
+        expect(service.execute.result).to be(:fine)
+        expect(service.status).to be(:ok)
         expect(service).to be_success
       end
     end
@@ -152,8 +152,8 @@ RSpec.describe 'Excom::Plugins::Status' do
       let(:service) { build_service(all_good: false) }
 
       it 'executes correctly' do
-        expect(service.execute.result).to be :error
-        expect(service.status).to be :not_ok
+        expect(service.execute.result).to be(:error)
+        expect(service.status).to be(:not_ok)
         expect(service).not_to be_success
       end
     end
@@ -165,7 +165,7 @@ RSpec.describe 'Excom::Plugins::Status' do
       attributes :arg
 
       def execute!
-        success(:ok) { arg * 2 }
+        success(status: :ok) { arg * 2 }
       end
     end
 
@@ -186,8 +186,8 @@ RSpec.describe 'Excom::Plugins::Status' do
       other_service = other_service_class.(5)
 
       expect(other_service).to be_success
-      expect(other_service.status).to be :ok
-      expect(other_service.result).to be 10
+      expect(other_service.status).to be(:ok)
+      expect(other_service.result).to be(10)
     end
   end
 end

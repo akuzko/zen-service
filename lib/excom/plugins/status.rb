@@ -8,14 +8,14 @@ module Excom
 
       helpers = Module.new do
         success.each do |name|
-          define_method(name) do |result = nil|
-            success(name) { result }
+          define_method(name) do |**opts, &block|
+            success(status: name, **opts, &block)
           end
         end
 
         failure.each do |name|
-          define_method(name) do |result = nil|
-            failure(name) { result }
+          define_method(name) do |**opts, &block|
+            failure(status: name, **opts, &block)
           end
         end
       end
@@ -28,23 +28,23 @@ module Excom
       state.status
     end
 
-    private def success!(status = :success)
-      state.status = status 
-      super()
-    end
-
-    private def success(status = :success, &block)
+    private def success!(status: :success, **)
       state.status = status
-      super(&block)
+      super
     end
 
-    private def failure!(status = :failure)
+    private def success(status: :success, **)
       state.status = status
-      super()
+      super
     end
 
-    private def failure(status = :failure, &block)
-      super(&block).tap do
+    private def failure!(status: :failure, **)
+      state.status = status
+      super
+    end
+
+    private def failure(status: :failure, **)
+      super.tap do
         state.status = status
       end
     end

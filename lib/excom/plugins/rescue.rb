@@ -4,7 +4,7 @@ module Excom
 
     def self.used(service_class, *)
       service_class.use(:status) unless service_class.using?(:status)
-      service_class.add_execution_prop :error
+      service_class.add_execution_prop(:error)
     end
 
     def execute(**opts)
@@ -12,7 +12,7 @@ module Excom
       super
     rescue StandardError => error
       clear_execution_state!
-      failure!(:error)
+      failure!(status: :error)
       state.error = error
       raise error unless rezcue
       self

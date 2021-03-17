@@ -1,6 +1,6 @@
 module Excom
-  module Plugins::Caching
-    Plugins.register :caching, self
+  module Plugins::ExecutionCache
+    Plugins.register :execution_cache, self
 
     def initialize(*)
       super

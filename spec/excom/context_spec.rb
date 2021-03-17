@@ -18,7 +18,7 @@ RSpec.describe 'Excom::Plugins::Context' do
 
   it 'accepts global context' do
     Excom.with_context(custom_hash[:foo, 'foo']) do
-      expect(service.execute.result).to eq 'foo'
+      expect(service.execute.result).to eq('foo')
       expect(service.context).to be_an_instance_of(custom_hash)
     end
   end
@@ -26,7 +26,7 @@ RSpec.describe 'Excom::Plugins::Context' do
   describe '#with_context' do
     it 'merges local context into global context' do
       Excom.with_context(foo: 'foo') do
-        expect(service.with_context(foo: 'bar').execute.result).to eq 'bar'
+        expect(service.with_context(foo: 'bar').execute.result).to eq('bar')
       end
     end
 
@@ -50,7 +50,7 @@ RSpec.describe 'Excom::Plugins::Context' do
 
       it 'uses local context during execution' do
         service = other_service_class.new.with_context(foo: 5)
-        expect(service.execute.result).to eq 10
+        expect(service.execute.result).to eq(10)
       end
     end
   end

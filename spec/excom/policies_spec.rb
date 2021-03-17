@@ -1,9 +1,9 @@
 require 'spec_helper'
 require 'forwardable'
 
-RSpec.describe 'Excom::Plugins::Abilities' do
+RSpec.describe 'Excom::Plugins::Policies' do
   def_service do
-    use :abilities
+    use :policies
 
     attributes :user, :post
 
@@ -31,8 +31,8 @@ RSpec.describe 'Excom::Plugins::Abilities' do
   end
 
   let(:service) { build_service(user: user, post: post) }
-  let(:user) { {id: 1} }
-  let(:post) { {author_id: 1, outdated: false} }
+  let(:user)    { { id: 1 } }
+  let(:post)    { { author_id: 1, outdated: false } }
 
   describe '#execute' do
     specify do
@@ -46,22 +46,22 @@ RSpec.describe 'Excom::Plugins::Abilities' do
   describe '#guard!' do
     context 'when can' do
       specify do
-        expect{ service.guard!(:publish) }.not_to raise_error
+        expect { service.guard!(:publish) }.not_to raise_error
       end
     end
 
     context 'when can not' do
       context 'when reason is not an exception' do
-        let(:post) { {author_id: 2, outdated: false} }
+        let(:post) { { author_id: 2, outdated: false } }
 
         specify do
-          expect{ service.guard!(:publish) }.to raise_error(Excom::Plugins::Abilities::GuardViolationError, 'unauthorized')
+          expect { service.guard!(:publish) }.to raise_error(Excom::Plugins::Policies::GuardViolationError, 'unauthorized')
         end
       end
 
       context 'when reason is an exception' do
-        let(:user) { {id: 0} }
-        let(:post) { {author_id: 0, outdated: false} }
+        let(:user) { { id: 0 } }
+        let(:post) { { author_id: 0, outdated: false } }
 
         specify do
           expect{ service.guard!(:publish) }.to raise_error(StandardError, 'not allowed')
@@ -78,7 +78,7 @@ RSpec.describe 'Excom::Plugins::Abilities' do
     end
 
     context 'when can not' do
-      let(:post) { {author_id: 2, outdated: false} }
+      let(:post) { { author_id: 2, outdated: false } }
 
       specify do
         expect(service.can?(:publish)).to be(false)
@@ -88,7 +88,7 @@ RSpec.describe 'Excom::Plugins::Abilities' do
 
   describe '#why_cant?' do
     context 'when reason is not a Proc' do
-      let(:post) { {author_id: 2, outdated: false} }
+      let(:post) { { author_id: 2, outdated: false } }
 
       specify do
         expect(service.why_cant?(:delete)).to be(:unauthorized)
@@ -96,7 +96,7 @@ RSpec.describe 'Excom::Plugins::Abilities' do
     end
 
     context 'when reason is a Proc' do
-      let(:post) { {author_id: 1, outdated: true} }
+      let(:post) { { author_id: 1, outdated: true } }
 
       specify do
         expect(service.why_cant?(:delete)).to be(:unprocessable_entity)

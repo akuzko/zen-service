@@ -1,6 +1,6 @@
 module Excom
-  module Plugins::Abilities
-    Plugins.register :abilities, self
+  module Plugins::Policies
+    Plugins.register :policies, self
 
     GuardViolationError = Class.new(StandardError)
 
@@ -9,12 +9,12 @@ module Excom
     end
 
     private def execute!
-      partials.each_with_object({}) do |partial, abilities|
+      partials.each_with_object({}) do |partial, permissions|
         partial.public_methods(false).grep(/\?$/).each do |action_check|
           key = action_check.to_s[0...-1]
           can = partial.public_send(action_check)
 
-          abilities[key] = abilities.key?(key) ? abilities[key] && can : can
+          permissions[key] = permissions.key?(key) ? permissions[key] && can : can
         end
       end
     end

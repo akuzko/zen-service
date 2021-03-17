@@ -15,16 +15,16 @@ RSpec.describe Excom::Service do
       end
 
       it 'inherits attributes list' do
-        expect(service_class.attributes_list).to eq [:foo, :bar, :baz]
-        expect(inherited_service_class.attributes_list).to eq [:foo, :bar, :baz, :bak]
+        expect(service_class.attributes_list).to eq([:foo, :bar, :baz])
+        expect(inherited_service_class.attributes_list).to eq([:foo, :bar, :baz, :bak])
       end
 
       specify 'reader helpers' do
         base_service = service_class.new
         inherited_service = inherited_service_class.new
 
-        expect(base_service).not_to respond_to :bak
-        expect(inherited_service).to respond_to :bak
+        expect(base_service).not_to respond_to(:bak)
+        expect(inherited_service).to respond_to(:bak)
       end
     end
 
@@ -32,29 +32,29 @@ RSpec.describe Excom::Service do
       it 'allows to pass attributes as options' do
         service = build_service(foo: 1, baz: 2)
 
-        expect(service.foo).to eq 1
-        expect(service.bar).to be nil
-        expect(service.baz).to eq 2
+        expect(service.foo).to eq(1)
+        expect(service.bar).to be(nil)
+        expect(service.baz).to eq(2)
       end
 
       it 'allows to pass attributes as parameters' do
         service = build_service(1, baz: 2)
 
-        expect(service.foo).to eq 1
-        expect(service.bar).to be nil
-        expect(service.baz).to eq 2
+        expect(service.foo).to eq(1)
+        expect(service.bar).to be(nil)
+        expect(service.baz).to eq(2)
       end
     end
 
     context 'when too many attributes' do
       it 'fails with an error' do
-        expect{ build_service(1, 2, 3, 4) }.to raise_error(ArgumentError)
+        expect { build_service(1, 2, 3, 4) }.to raise_error(ArgumentError)
       end
     end
 
     context 'when invalid attributes' do
       it 'fails with an error' do
-        expect{ build_service(1, 2, paw: 'wow') }.to raise_error(ArgumentError)
+        expect { build_service(1, 2, paw: 'wow') }.to raise_error(ArgumentError)
       end
     end
 
@@ -63,8 +63,8 @@ RSpec.describe Excom::Service do
 
       it 'generates a new service with merged attributes' do
         attrs_service = service.with_attributes(bar: 2)
-        expect(attrs_service.foo).to eq 1
-        expect(attrs_service.bar).to eq 2
+        expect(attrs_service.foo).to eq(1)
+        expect(attrs_service.bar).to eq(2)
       end
 
       it 'clears execution flags' do
@@ -85,7 +85,7 @@ RSpec.describe Excom::Service do
       end
 
       it { is_expected.to be_success }
-      its(:result) { is_expected.to be :result }
+      its(:result) { is_expected.to be(:result) }
     end
 
     describe '#failure' do
@@ -98,7 +98,7 @@ RSpec.describe Excom::Service do
       end
 
       it { is_expected.to be_failure }
-      its(:result) { is_expected.to be :errors }
+      its(:result) { is_expected.to be(:errors) }
     end
 
     describe '#result' do
@@ -112,7 +112,7 @@ RSpec.describe Excom::Service do
         end
 
         it { is_expected.to be_success }
-        its(:result) { is_expected.to eq :result }
+        its(:result) { is_expected.to eq(:result) }
       end
 
       context 'when block yields to falsy value' do
@@ -123,7 +123,7 @@ RSpec.describe Excom::Service do
         end
 
         it { is_expected.to be_failure }
-        its(:result) { is_expected.to be false }
+        its(:result) { is_expected.to be(false) }
       end
 
       context 'implicit success' do
@@ -134,7 +134,7 @@ RSpec.describe Excom::Service do
         end
 
         it { is_expected.to be_success }
-        its(:result) { is_expected.to eq :result }
+        its(:result) { is_expected.to eq(:result) }
       end
 
       context 'implicit failure' do
@@ -145,7 +145,7 @@ RSpec.describe Excom::Service do
         end
 
         it { is_expected.to be_failure }
-        its(:result) { is_expected.to be nil }
+        its(:result) { is_expected.to be(nil) }
       end
     end
 
@@ -177,7 +177,7 @@ RSpec.describe Excom::Service do
 
       specify '.[]' do
         result = service_class[:foo]
-        expect(result).to eq :foo
+        expect(result).to eq(:foo)
       end
     end
 
@@ -206,7 +206,7 @@ RSpec.describe Excom::Service do
         other_service = other_service_class.(5)
 
         expect(other_service).to be_success
-        expect(other_service.result).to be 10
+        expect(other_service.result).to be(10)
       end
     end
   end

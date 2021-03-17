@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-RSpec.describe 'Excom::Plugins::Caching' do
+RSpec.describe 'Excom::Plugins::ExecutionCache' do
   def_service do
-    use :caching
+    use :execution_cache
 
     attributes :foo
 
@@ -20,8 +20,8 @@ RSpec.describe 'Excom::Plugins::Caching' do
   it 'runs execution logic only once' do
     expect(service).to receive(:calculate_result).once.and_call_original
     expect(service.execute).to be_success
-    expect(service.result).to eq 4
+    expect(service.result).to eq(4)
     expect(service).to be_executed
-    expect(service.execute.result).to eq 4
+    expect(service.execute.result).to eq(4)
   end
 end
