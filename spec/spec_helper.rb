@@ -20,4 +20,6 @@ end
 RSpec.configure do |config|
   config.extend SpecHelper::GroupMethods
   config.include SpecHelper::ExampleMethods
+
+  config.include Excom::Service::SpecHelpers
 end
