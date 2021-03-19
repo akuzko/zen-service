@@ -1,7 +1,9 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-RSpec.describe 'Excom::Plugins::Status' do
-  describe '#success' do
+require "spec_helper"
+
+RSpec.describe "Zen::Service::Plugins::Status" do
+  describe "#success" do
     subject(:service) { build_service.execute }
 
     def_service do
@@ -16,7 +18,7 @@ RSpec.describe 'Excom::Plugins::Status' do
     its(:status) { is_expected.to be(:success) }
     its(:result) { is_expected.to be(:result) }
 
-    context 'when status is passed' do
+    context "when status is passed" do
       def_service do
         use :status
 
@@ -31,7 +33,7 @@ RSpec.describe 'Excom::Plugins::Status' do
     end
   end
 
-  describe '#failure' do
+  describe "#failure" do
     subject(:service) { build_service.execute }
 
     def_service do
@@ -46,7 +48,7 @@ RSpec.describe 'Excom::Plugins::Status' do
     its(:status) { is_expected.to be(:failure) }
     its(:result) { is_expected.to be(:errors) }
 
-    context 'when status is passed' do
+    context "when status is passed" do
       def_service do
         use :status
 
@@ -61,10 +63,10 @@ RSpec.describe 'Excom::Plugins::Status' do
     end
   end
 
-  describe '#result' do
+  describe "#result" do
     subject(:service) { build_service.execute }
 
-    context 'when block yields to truthy value' do
+    context "when block yields to truthy value" do
       def_service do
         use :status
 
@@ -78,7 +80,7 @@ RSpec.describe 'Excom::Plugins::Status' do
       its(:result) { is_expected.to eq(:result) }
     end
 
-    context 'when block yields to falsy value' do
+    context "when block yields to falsy value" do
       def_service do
         use :status
 
@@ -92,7 +94,7 @@ RSpec.describe 'Excom::Plugins::Status' do
       its(:result) { is_expected.to be(false) }
     end
 
-    context 'implicit success' do
+    context "implicit success" do
       def_service do
         use :status
 
@@ -106,7 +108,7 @@ RSpec.describe 'Excom::Plugins::Status' do
       its(:result) { is_expected.to eq(:result) }
     end
 
-    context 'implicit failure' do
+    context "implicit failure" do
       def_service do
         use :status
 
@@ -121,11 +123,11 @@ RSpec.describe 'Excom::Plugins::Status' do
     end
   end
 
-  describe 'status helpers' do
+  describe "status helpers" do
     def_service do
       use :status,
-        success: [:ok],
-        failure: [:not_ok]
+          success: [:ok],
+          failure: [:not_ok]
 
       attributes :all_good
 
@@ -138,20 +140,20 @@ RSpec.describe 'Excom::Plugins::Status' do
       end
     end
 
-    describe 'success helpers' do
+    describe "success helpers" do
       let(:service) { build_service(all_good: true) }
 
-      it 'executes correctly' do
+      it "executes correctly" do
         expect(service.execute.result).to be(:fine)
         expect(service.status).to be(:ok)
         expect(service).to be_success
       end
     end
 
-    describe 'failure helpers' do
+    describe "failure helpers" do
       let(:service) { build_service(all_good: false) }
 
-      it 'executes correctly' do
+      it "executes correctly" do
         expect(service.execute.result).to be(:error)
         expect(service.status).to be(:not_ok)
         expect(service).not_to be_success
@@ -159,7 +161,7 @@ RSpec.describe 'Excom::Plugins::Status' do
     end
   end
 
-  describe 'status propagation in service execution delegation' do
+  describe "status propagation in service execution delegation" do
     def_service do
       use :status
       attributes :arg
@@ -172,7 +174,7 @@ RSpec.describe 'Excom::Plugins::Status' do
     let(:other_service_class) do
       klass = service_class
 
-      Class.new(Excom::Service) do
+      Class.new(Zen::Service) do
         use :status
         attributes :arg
 
@@ -182,7 +184,7 @@ RSpec.describe 'Excom::Plugins::Status' do
       end
     end
 
-    specify 'both :status and :result can be delegated via ~@ method' do
+    specify "both :status and :result can be delegated via ~@ method" do
       other_service = other_service_class.(5)
 
       expect(other_service).to be_success

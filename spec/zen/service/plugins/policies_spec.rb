@@ -1,7 +1,9 @@
-require 'spec_helper'
-require 'forwardable'
+# frozen_string_literal: true
 
-RSpec.describe 'Excom::Plugins::Policies' do
+require "spec_helper"
+require "forwardable"
+
+RSpec.describe "Zen::Service::Plugins::Policies" do
   def_service do
     use :policies
 
@@ -23,7 +25,7 @@ RSpec.describe 'Excom::Plugins::Policies' do
       end
     end
 
-    deny_with StandardError.new('not allowed') do
+    deny_with StandardError.new("not allowed") do
       def publish?
         user[:id] > 0
       end
@@ -34,50 +36,50 @@ RSpec.describe 'Excom::Plugins::Policies' do
   let(:user)    { { id: 1 } }
   let(:post)    { { author_id: 1, outdated: false } }
 
-  describe '#execute' do
+  describe "#execute" do
     specify do
       expect(service.execute.result).to eq(
-        'publish' => true,
-        'delete'  => true
+        "publish" => true,
+        "delete" => true
       )
     end
   end
 
-  describe '#guard!' do
-    context 'when can' do
+  describe "#guard!" do
+    context "when can" do
       specify do
         expect { service.guard!(:publish) }.not_to raise_error
       end
     end
 
-    context 'when can not' do
-      context 'when reason is not an exception' do
+    context "when can not" do
+      context "when reason is not an exception" do
         let(:post) { { author_id: 2, outdated: false } }
 
         specify do
-          expect { service.guard!(:publish) }.to raise_error(Excom::Plugins::Policies::GuardViolationError, 'unauthorized')
+          expect { service.guard!(:publish) }.to raise_error(Zen::Service::Plugins::Policies::GuardViolationError, "unauthorized")
         end
       end
 
-      context 'when reason is an exception' do
+      context "when reason is an exception" do
         let(:user) { { id: 0 } }
         let(:post) { { author_id: 0, outdated: false } }
 
         specify do
-          expect{ service.guard!(:publish) }.to raise_error(StandardError, 'not allowed')
+          expect { service.guard!(:publish) }.to raise_error(StandardError, "not allowed")
         end
       end
     end
   end
 
-  describe '#can?' do
-    context 'when can' do
+  describe "#can?" do
+    context "when can" do
       specify do
         expect(service.can?(:publish)).to be(true)
       end
     end
 
-    context 'when can not' do
+    context "when can not" do
       let(:post) { { author_id: 2, outdated: false } }
 
       specify do
@@ -86,8 +88,8 @@ RSpec.describe 'Excom::Plugins::Policies' do
     end
   end
 
-  describe '#why_cant?' do
-    context 'when reason is not a Proc' do
+  describe "#why_cant?" do
+    context "when reason is not a Proc" do
       let(:post) { { author_id: 2, outdated: false } }
 
       specify do
@@ -95,7 +97,7 @@ RSpec.describe 'Excom::Plugins::Policies' do
       end
     end
 
-    context 'when reason is a Proc' do
+    context "when reason is a Proc" do
       let(:post) { { author_id: 1, outdated: true } }
 
       specify do

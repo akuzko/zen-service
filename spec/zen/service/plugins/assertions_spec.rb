@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-RSpec.describe 'Excom::Plugins::Assetions' do
+require "spec_helper"
+
+RSpec.describe "Zen::Service::Plugins::Assetions" do
   def_service do
     use :assertions
 
@@ -12,19 +14,19 @@ RSpec.describe 'Excom::Plugins::Assetions' do
     end
   end
 
-  context 'when assertion passes' do
+  context "when assertion passes" do
     let(:service) { build_service(foo: 3) }
 
-    specify 'service is executed successfully' do
+    specify "service is executed successfully" do
       expect(service.execute.result).to eq(3)
       expect(service).to be_success
     end
   end
 
-  context 'when assertion fails' do
+  context "when assertion fails" do
     let(:service) { build_service(foo: 2) }
 
-    specify 'service fails' do
+    specify "service fails" do
       expect(service.execute.result).to be(nil)
       expect(service).not_to be_success
     end

@@ -1,6 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-RSpec.describe 'Excom::Plugins::ExecutionCache' do
+require "spec_helper"
+
+RSpec.describe "Zen::Service::Plugins::ExecutionCache" do
   def_service do
     use :execution_cache
 
@@ -17,7 +19,7 @@ RSpec.describe 'Excom::Plugins::ExecutionCache' do
 
   let(:service) { build_service(foo: 2) }
 
-  it 'runs execution logic only once' do
+  it "runs execution logic only once" do
     expect(service).to receive(:calculate_result).once.and_call_original
     expect(service.execute).to be_success
     expect(service.result).to eq(4)

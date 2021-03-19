@@ -1,0 +1,32 @@
+AllCops:
+  NewCops: disable
+  TargetRubyVersion: 2.4
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/AccessModifierDeclarations:
+  EnforcedStyle: inline
+
+Style/Documentation:
+  Enabled: false
+
+Style/LambdaCall:
+  Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/DoubleNegation:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 20
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*.rb'
+
+Layout/LineLength:
+  Exclude:
+    - 'spec/**/*.rb'

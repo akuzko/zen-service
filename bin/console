@@ -1,16 +1,17 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require "bundler/setup"
-require "excom"
+require "zen/service"
 
-class Show < Excom::Service
+class Show < Zen::Service
   use :execution_cache
 
   attributes :foo
 
   def execute!
     sleep(1)
-    {foo: foo}
+    { foo: foo }
   end
 end
 
@@ -20,7 +21,7 @@ class MyErrors < Hash
   end
 end
 
-class Policies < Excom::Service
+class Policies < Zen::Service
   use :policies
 
   attributes :foo, :bar, :threshold
@@ -42,7 +43,7 @@ class Policies < Excom::Service
   end
 end
 
-class Save < Excom::Service
+class Save < Zen::Service
   use :status
   use :validation, errors_class: MyErrors
   use :assertions
@@ -59,8 +60,8 @@ class Save < Excom::Service
   end
 
   private def validate
-    errors.add(:foo, 'invalid') unless policies.can?(:save)
-    errors.add(:bar, 'too small') unless policies.can?(:bar)
+    errors.add(:foo, "invalid") unless policies.can?(:save)
+    errors.add(:bar, "too small") unless policies.can?(:bar)
   end
 
   private def policies

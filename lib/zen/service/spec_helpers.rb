@@ -1,4 +1,6 @@
-module Excom
+# frozen_string_literal: true
+
+module Zen
   module Service::SpecHelpers
     # Example:
     #   stub_service(MyService)
@@ -12,7 +14,7 @@ module Excom
     module ClassMethods
       def service_context(&block)
         around do |example|
-          Excom.with_context(instance_exec(&block)) do
+          ::Zen::Service.with_context(instance_exec(&block)) do
             example.run
           end
         end
@@ -22,7 +24,7 @@ module Excom
     class ServiceMocker < SimpleDelegator
       attr_reader :service_class, :service
 
-      def stub_service(service_class)
+      def stub_service(service_class) # rubocop:disable Metrics/AbcSize
         @service_class = service_class
         @service = double(service_class.name)
 

@@ -8,5 +8,6 @@
 /spec/reports/
 /tmp/
 
+.rspec_status
 .ruby-version
 .ruby-gemset

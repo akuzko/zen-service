@@ -1,9 +1,11 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-RSpec.describe 'Excom::Plugins::Validation' do
+require "spec_helper"
+
+RSpec.describe "Zen::Service::Plugins::Validation" do
   let(:service) { build_service }
 
-  describe 'behavior' do
+  describe "behavior" do
     def_service do
       use :validation
 
@@ -16,36 +18,36 @@ RSpec.describe 'Excom::Plugins::Validation' do
       end
     end
 
-    it 'fails if errors are present and does not executes main logic' do
+    it "fails if errors are present and does not executes main logic" do
       expect(service).not_to receive(:execute!)
       expect(service.execute).not_to be_success
       expect(service.errors).not_to be_empty
     end
   end
 
-  describe ':errors_class option' do
-    describe 'default behavior' do
+  describe ":errors_class option" do
+    describe "default behavior" do
       def_service do
         use :validation
       end
 
-      it 'uses Validation::Errors by default' do
-        expect(service.execute.errors).to be_an_instance_of(Excom::Plugins::Validation::Errors)
+      it "uses Validation::Errors by default" do
+        expect(service.execute.errors).to be_an_instance_of(Zen::Service::Plugins::Validation::Errors)
       end
     end
 
-    context 'when given' do
+    context "when given" do
       def_service do
         my_errors = Class.new(Hash) do
           def self.name
-            'MyErrors'
+            "MyErrors"
           end
         end
         use :validation, errors_class: my_errors
       end
 
-      it 'uses specified class for errors object' do
-        expect(service.execute.errors.class.name).to eq('MyErrors')
+      it "uses specified class for errors object" do
+        expect(service.execute.errors.class.name).to eq("MyErrors")
       end
     end
   end
