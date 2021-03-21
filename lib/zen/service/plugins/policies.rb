@@ -3,7 +3,7 @@
 module Zen
   module Service::Plugins
     module Policies
-      Service::Plugins.register :policies, self
+      extend Plugin
 
       GuardViolationError = Class.new(StandardError)
 

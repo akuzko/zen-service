@@ -3,6 +3,8 @@
 module Zen
   module Service::Plugins
     module Context
+      extend Plugin
+
       attr_accessor :local_context
       protected :local_context, :local_context=
 
@@ -45,7 +47,7 @@ module Zen
         end
       end
 
-      Service::Plugins.register :context, self
+      service_extension ServiceMethods
     end
   end
 end

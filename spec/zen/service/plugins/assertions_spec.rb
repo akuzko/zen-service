@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe "Zen::Service::Plugins::Assetions" do
+RSpec.describe Zen::Service::Plugins::Assertions do
   def_service do
     use :assertions
 

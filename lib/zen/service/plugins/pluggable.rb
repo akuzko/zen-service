@@ -6,13 +6,12 @@ module Zen
       def use(name, **opts)
         extension = Service::Plugins.fetch(name)
 
-        method = extension.options[:use_with] || :include
-        send(method, extension)
+        include extension
 
-        defaults = extension.options[:default_options]
+        defaults = extension.config[:default_options]
         opts = defaults.merge(opts) unless defaults.nil?
 
-        extend extension::ClassMethods if extension.const_defined?("ClassMethods")
+        extend extension::ClassMethods if extension.const_defined?(:ClassMethods)
 
         extension.used(self, **opts) if extension.respond_to?(:used)
 

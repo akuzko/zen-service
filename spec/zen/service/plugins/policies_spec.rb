@@ -3,7 +3,7 @@
 require "spec_helper"
 require "forwardable"
 
-RSpec.describe "Zen::Service::Plugins::Policies" do
+RSpec.describe Zen::Service::Plugins::Policies do
   def_service do
     use :policies
 

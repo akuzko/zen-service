@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe "Zen::Service::Plugins::Context" do
+RSpec.describe Zen::Service::Plugins::Context do
   def_service do
     use :context
 

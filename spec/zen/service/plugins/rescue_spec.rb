@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe "Zen::Service::Plugins::Rescue" do
+RSpec.describe Zen::Service::Plugins::Rescue do
   def_service do
     use :rescue
 

@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe "Zen::Service::Plugins::ExecutionCache" do
+RSpec.describe Zen::Service::Plugins::ExecutionCache do
   def_service do
     use :execution_cache
 

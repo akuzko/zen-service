@@ -3,11 +3,9 @@
 module Zen
   module Service::Plugins
     module Status
-      Service::Plugins.register(
-        :status,
-        self,
-        default_options: { success: [], failure: [] }
-      )
+      extend Plugin
+
+      default_options(success: [], failure: [])
 
       def self.used(service_class, success:, failure:)
         service_class.add_execution_prop(:status)
@@ -26,7 +24,7 @@ module Zen
           end
         end
 
-        service_class.const_set("StatusHelpers", helpers)
+        service_class.const_set(:StatusHelpers, helpers)
         service_class.send(:include, helpers)
       end
 

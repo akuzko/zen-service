@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe "Zen::Service::Plugins::Status" do
+RSpec.describe Zen::Service::Plugins::Status do
   describe "#success" do
     subject(:service) { build_service.execute }
 

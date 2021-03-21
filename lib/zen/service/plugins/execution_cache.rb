@@ -3,7 +3,7 @@
 module Zen
   module Service::Plugins
     module ExecutionCache
-      Service::Plugins.register :execution_cache, self
+      extend Plugin
 
       def initialize(*)
         super

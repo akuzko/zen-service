@@ -3,7 +3,7 @@
 module Zen
   module Service::Plugins
     module Rescue
-      Service::Plugins.register :rescue, self
+      extend Plugin
 
       def self.used(service_class, *)
         service_class.use(:status) unless service_class.using?(:status)

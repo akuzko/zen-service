@@ -3,7 +3,7 @@
 module Zen
   module Service::Plugins
     module Attributes
-      Service::Plugins.register :attributes, self
+      extend Plugin
 
       def initialize(*args)
         @attributes = assert_valid_attributes!(resolve_args!(args))

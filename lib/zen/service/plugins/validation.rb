@@ -3,17 +3,15 @@
 module Zen
   module Service::Plugins
     module Validation
+      extend Plugin
+
       class Errors < Hash
         def add(key, message)
           (self[key] ||= []).push(message)
         end
       end
 
-      Service::Plugins.register(
-        :validation,
-        self,
-        default_options: { errors_class: Errors }
-      )
+      default_options(errors_class: Errors)
 
       def self.used(service_class, *)
         service_class.add_execution_prop(:errors)

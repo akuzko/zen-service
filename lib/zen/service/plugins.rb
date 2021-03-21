@@ -6,13 +6,15 @@ module Zen
       plugins[name] || raise("extension `#{name}` is not registered")
     end
 
-    def self.register(name, extension, options = {})
-      raise ArgumentError, "extension `#{name}` is already registered" if plugins.key?(name)
+    def self.register(name, extension)
+      raise(ArgumentError, "extension `#{name}` is already registered") if plugins.key?(name)
 
-      ::Zen::Service.extend(extension::ServiceMethods) if extension.const_defined?("ServiceMethods")
-
-      extension.singleton_class.send(:define_method, :options) { options }
-      plugins[name] = extension
+      plugins[name] =
+        if (old_name = plugins.key(extension))
+          plugins.delete(old_name)
+        else
+          extension
+        end
     end
 
     def self.plugins
@@ -20,6 +22,7 @@ module Zen
     end
   end
 
+  require_relative "plugins/plugin"
   require_relative "plugins/pluggable"
   require_relative "plugins/executable"
   require_relative "plugins/attributes"

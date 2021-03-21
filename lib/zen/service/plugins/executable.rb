@@ -5,7 +5,7 @@ require "ostruct"
 module Zen
   module Service::Plugins
     module Executable
-      Service::Plugins.register :executable, self
+      extend Plugin
 
       class State
         def self.prop_names

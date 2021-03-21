@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe "Zen::Service::Plugins::Validation" do
+RSpec.describe Zen::Service::Plugins::Validation do
   let(:service) { build_service }
 
   describe "behavior" do

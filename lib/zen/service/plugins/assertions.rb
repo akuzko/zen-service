@@ -3,7 +3,7 @@
 module Zen
   module Service::Plugins
     module Assertions
-      Service::Plugins.register :assertions, self
+      extend Plugin
 
       private def assert
         if yield
