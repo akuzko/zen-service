@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Artem Kuzko"]
   spec.email         = ["a.kuzko@gmail.com"]
 
-  spec.summary       = "Flexible and highly extensible Services for business logic organization"
+  spec.summary       = "Essence of service objects pattern"
   spec.description   = "Flexible and highly extensible Services for business logic organization"
   spec.homepage      = "https://github.com/akuzko/zen-service"
   spec.license       = "MIT"
@@ -18,7 +18,6 @@ Gem::Specification.new do |spec|
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/akuzko/zen-service.git"
-  spec.metadata["changelog_uri"] = "https://github.com/akuzko/zen-service/blob/master/CHANGELOG.md"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
@@ -28,4 +27,11 @@ Gem::Specification.new do |spec|
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
+
+  spec.add_development_dependency "pry"
+  spec.add_development_dependency "pry-nav"
+  spec.add_development_dependency "rake", "~> 13.0"
+  spec.add_development_dependency "rspec", "~> 3.0"
+  spec.add_development_dependency "rspec-its", "~> 1.2"
+  spec.add_development_dependency "rubocop", "~> 0.80"
 end
