@@ -7,10 +7,16 @@ module Zen
 
       default_options(success: [], failure: [])
 
-      def self.used(service_class, success:, failure:)
+      def self.used(service_class, **)
         service_class.add_execution_prop(:status)
 
-        helpers = Module.new do
+        helpers = Module.new
+        service_class.const_set(:StatusHelpers, helpers)
+        service_class.send(:include, helpers)
+      end
+
+      def self.configure(service_class, success:, failure:)
+        service_class::StatusHelpers.module_eval do
           success.each do |name|
             define_method(name) do |**opts, &block|
               success(status: name, **opts, &block)
@@ -23,9 +29,6 @@ module Zen
             end
           end
         end
-
-        service_class.const_set(:StatusHelpers, helpers)
-        service_class.send(:include, helpers)
       end
 
       def status
