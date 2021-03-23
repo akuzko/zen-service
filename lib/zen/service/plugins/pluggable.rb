@@ -14,6 +14,10 @@ module Zen
           return extension
         end
 
+        use_extension(extension, name, **opts)
+      end
+
+      private def use_extension(extension, name, **opts)
         include extension
         extend extension::ClassMethods if extension.const_defined?(:ClassMethods)
 

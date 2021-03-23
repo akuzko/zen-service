@@ -3,6 +3,8 @@
 module Zen
   module Service::Plugins
     def self.fetch(name)
+      require("zen/service/plugins/#{name}") unless plugins.key?(name)
+
       plugins[name] || raise("extension `#{name}` is not registered")
     end
 

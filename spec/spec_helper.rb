@@ -5,15 +5,17 @@ require "pry"
 require "rspec/its"
 
 module SpecHelper
-  module GroupMethods
-    def def_service(&block)
-      let(:service_class) { Class.new(Zen::Service, &block) }
-    end
+  def self.included(target)
+    target.extend(ClassMethods)
   end
 
-  module ExampleMethods
-    def build_service(*args)
-      service_class.new(*args)
+  def build_service(*args)
+    service_class.new(*args)
+  end
+
+  module ClassMethods
+    def def_service(&block)
+      let(:service_class) { Class.new(Zen::Service, &block) }
     end
   end
 end
@@ -29,8 +31,6 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 
-  config.extend SpecHelper::GroupMethods
-  config.include SpecHelper::ExampleMethods
-
+  config.include SpecHelper
   config.include Zen::Service::SpecHelpers
 end

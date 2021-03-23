@@ -2,6 +2,10 @@
 
 module Zen
   module Service::SpecHelpers
+    def self.included(target)
+      target.extend(ClassMethods)
+    end
+
     # Example:
     #   stub_service(MyService)
     #     .with_atributes(foo: 'foo')
