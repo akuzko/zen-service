@@ -9,6 +9,10 @@ RSpec.describe Zen::Service::Plugins::Plugin do
     register_as :custom_name
     default_options foo: 5
 
+    def self.used(service_class, **, &block)
+      service_class.class_eval(&block) unless block.nil?
+    end
+
     def foo
       self.class.plugins[:custom_name].options[:foo]
     end
@@ -30,7 +34,11 @@ RSpec.describe Zen::Service::Plugins::Plugin do
 
   describe "DSL methods" do
     def_service do
-      use :custom_name
+      use :custom_name do
+        def bar
+          7
+        end
+      end
     end
 
     let(:service) { build_service }
@@ -39,6 +47,10 @@ RSpec.describe Zen::Service::Plugins::Plugin do
       expect(service.foo).to eq(5)
       expect(service.class.bar).to eq(:bar)
       expect(::Zen::Service.baz).to eq(:baz)
+    end
+
+    it "allows to use block" do
+      expect(service.bar).to eq(7)
     end
   end
 
