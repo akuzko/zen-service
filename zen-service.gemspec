@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description   = "Flexible and highly extensible Services for business logic organization"
   spec.homepage      = "https://github.com/akuzko/zen-service"
   spec.license       = "MIT"
-  spec.required_ruby_version = Gem::Requirement.new(">= 2.4.0")
+  spec.required_ruby_version = Gem::Requirement.new(">= 3.2.0")
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org/"
 
@@ -33,5 +33,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency "rspec-its", "~> 1.2"
-  spec.add_development_dependency "rubocop", "~> 0.80"
+  spec.add_development_dependency "rubocop", "~> 1.81"
 end

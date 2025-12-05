@@ -2,36 +2,36 @@
 
 require "spec_helper"
 
-RSpec.describe Zen::Service::Plugins::Plugin do
-  module ::SpecPlugin
-    extend Zen::Service::Plugins::Plugin
+module ::SpecPlugin
+  extend Zen::Service::Plugins::Plugin
 
-    register_as :custom_name
-    default_options foo: 5
+  register_as :custom_name
+  default_options foo: 5
 
-    def self.used(service_class, **, &block)
-      service_class.class_eval(&block) unless block.nil?
-    end
-
-    def foo
-      self.class.plugins[:custom_name].options[:foo]
-    end
-
-    module ClassMethods
-      def bar
-        :bar
-      end
-    end
-
-    module ServiceMethods
-      def baz
-        :baz
-      end
-    end
-
-    service_extension ServiceMethods
+  def self.used(service_class, **, &block)
+    service_class.class_eval(&block) unless block.nil?
   end
 
+  def foo
+    self.class.plugins[:custom_name].options[:foo]
+  end
+
+  module ClassMethods
+    def bar
+      :bar
+    end
+  end
+
+  module ServiceMethods
+    def baz
+      :baz
+    end
+  end
+
+  service_extension ServiceMethods
+end
+
+RSpec.describe Zen::Service::Plugins::Plugin do
   describe "DSL methods" do
     def_service do
       use :custom_name do

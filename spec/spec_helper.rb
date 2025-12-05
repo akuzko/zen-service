@@ -9,8 +9,8 @@ module SpecHelper
     target.extend(ClassMethods)
   end
 
-  def build_service(*args)
-    service_class.new(*args)
+  def build_service(*args, **kwargs)
+    service_class.new(*args, **kwargs)
   end
 
   module ClassMethods
@@ -32,5 +32,4 @@ RSpec.configure do |config|
   end
 
   config.include SpecHelper
-  config.include Zen::Service::SpecHelpers
 end

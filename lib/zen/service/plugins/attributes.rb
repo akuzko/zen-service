@@ -5,8 +5,8 @@ module Zen
     module Attributes
       extend Plugin
 
-      def initialize(*args)
-        @attributes = assert_valid_attributes!(resolve_args!(args))
+      def initialize(*args, **kwargs)
+        @attributes = assert_valid_attributes!(resolve_args!(args, kwargs))
 
         super()
       end
@@ -20,24 +20,28 @@ module Zen
         clone.tap { |copy| copy.attributes.merge!(attributes) }
       end
 
-      protected def attributes
+      protected
+
+      def attributes
         @attributes
       end
 
-      private def resolve_args!(args) # rubocop:disable Metrics/AbcSize
-        opts = args.last.is_a?(Hash) ? args.pop : {}
+      private
+
+      def resolve_args!(args, kwargs) # rubocop:disable Metrics/AbcSize
         attributes = {}
+        total_length = args.length + kwargs.length
         allowed_length = self.class.attributes_list.length
 
-        if args.length > allowed_length
-          raise ArgumentError, "wrong number of attributes (given #{args.length}, expected 0..#{allowed_length})"
+        if total_length > allowed_length
+          raise ArgumentError, "wrong number of attributes (given #{total_length}, expected 0..#{allowed_length})"
         end
 
         args.each_with_index do |value, i|
           attributes[self.class.attributes_list[i]] = value
         end
 
-        opts.each do |name, value|
+        kwargs.each do |name, value|
           raise(ArgumentError, "attribute #{name} has already been provided as parameter") if attributes.key?(name)
 
           attributes[name] = value
@@ -46,7 +50,7 @@ module Zen
         attributes
       end
 
-      private def assert_valid_attributes!(actual)
+      def assert_valid_attributes!(actual)
         unexpected = actual.keys - self.class.attributes_list
 
         raise(ArgumentError, "wrong attributes #{unexpected} given") if unexpected.any?
@@ -58,7 +62,7 @@ module Zen
         def inherited(service_class)
           service_class.const_set(:AttributeMethods, Module.new)
           service_class.send(:include, service_class::AttributeMethods)
-          service_class.attributes_list.replace attributes_list.dup
+          service_class.attributes_list.replace(attributes_list.dup)
           super
         end
 

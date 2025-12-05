@@ -9,7 +9,7 @@ module Zen
 
     extend Plugins::Pluggable
 
-    use :executable
+    use :callable
     use :attributes
   end
 end

@@ -70,148 +70,26 @@ RSpec.describe Zen::Service do
         expect(attrs_service.foo).to eq(1)
         expect(attrs_service.bar).to eq(2)
       end
-
-      it "clears execution flags" do
-        service.execute
-        expect(service.with_attributes(bar: 2)).not_to be_executed
-      end
     end
   end
 
-  describe "execution" do
-    describe "#success" do
-      subject(:service) { build_service.execute }
+  describe ".call and .[] helpers" do
+    def_service do
+      attributes :arg
 
-      def_service do
-        def execute!
-          success { :result }
-        end
-      end
-
-      it { is_expected.to be_success }
-      its(:result) { is_expected.to be(:result) }
-    end
-
-    describe "#failure" do
-      subject(:service) { build_service.execute }
-
-      def_service do
-        def execute!
-          failure { :errors }
-        end
-      end
-
-      it { is_expected.to be_failure }
-      its(:result) { is_expected.to be(:errors) }
-    end
-
-    describe "#result" do
-      subject(:service) { build_service.execute }
-
-      context "when block yields to truthy value" do
-        def_service do
-          def execute!
-            result { :result }
-          end
-        end
-
-        it { is_expected.to be_success }
-        its(:result) { is_expected.to eq(:result) }
-      end
-
-      context "when block yields to falsy value" do
-        def_service do
-          def execute!
-            result { false }
-          end
-        end
-
-        it { is_expected.to be_failure }
-        its(:result) { is_expected.to be(false) }
-      end
-
-      context "implicit success" do
-        def_service do
-          def execute!
-            :result
-          end
-        end
-
-        it { is_expected.to be_success }
-        its(:result) { is_expected.to eq(:result) }
-      end
-
-      context "implicit failure" do
-        def_service do
-          def execute!
-            nil
-          end
-        end
-
-        it { is_expected.to be_failure }
-        its(:result) { is_expected.to be(nil) }
+      def call
+        arg
       end
     end
 
-    describe "#execute!" do
-      def_service do
-        def execute!
-          success!
-        end
-      end
-
-      it "automatically becomes private" do
-        expect { build_service.execute! }.to raise_error(/private method `execute!'/)
-      end
+    specify ".call" do
+      result = service_class.(:foo)
+      expect(result).to eq(:foo)
     end
 
-    describe ".call and .[] helpers" do
-      def_service do
-        attributes :arg
-
-        def execute!
-          arg
-        end
-      end
-
-      specify ".call" do
-        service = service_class.(:foo)
-        expect(service).to be_executed
-      end
-
-      specify ".[]" do
-        result = service_class[:foo]
-        expect(result).to eq(:foo)
-      end
-    end
-
-    describe "service execution delegation" do
-      def_service do
-        attributes :arg
-
-        def execute!
-          arg * 2
-        end
-      end
-
-      let(:other_service_class) do
-        klass = service_class
-
-        Class.new(Zen::Service) do
-          attributes :arg
-
-          define_method(:execute!) do
-            ~klass.(arg)
-          end
-        end
-      end
-
-      specify ":result can be delegated via ~@ method" do
-        other_service = other_service_class.(5)
-
-        expect(other_service).to be_success
-        expect(other_service.result).to be(10)
-      end
+    specify ".[]" do
+      result = service_class[:foo]
+      expect(result).to eq(:foo)
     end
   end
 end

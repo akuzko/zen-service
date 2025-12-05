@@ -1,12 +1,12 @@
 AllCops:
   NewCops: disable
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 3.2
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
 
 Style/AccessModifierDeclarations:
-  EnforcedStyle: inline
+  EnforcedStyle: group
 
 Style/Documentation:
   Enabled: false

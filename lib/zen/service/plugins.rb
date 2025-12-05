@@ -26,13 +26,6 @@ module Zen
 
   require_relative "plugins/plugin"
   require_relative "plugins/pluggable"
-  require_relative "plugins/executable"
+  require_relative "plugins/callable"
   require_relative "plugins/attributes"
-  require_relative "plugins/assertions"
-  require_relative "plugins/context"
-  require_relative "plugins/execution_cache"
-  require_relative "plugins/policies"
-  require_relative "plugins/rescue"
-  require_relative "plugins/status"
-  require_relative "plugins/validation"
 end

@@ -2,7 +2,6 @@
 
 Flexible and highly extensible Service Objects for business logic organization.
 
-[![build status](https://secure.travis-ci.org/akuzko/zen-service.png)](http://travis-ci.org/akuzko/zen-service)
 [![github release](https://img.shields.io/github/release/akuzko/zen-service.svg)](https://github.com/akuzko/zen-service/releases)
 
 ## Installation
@@ -30,7 +29,7 @@ both made applications hard to maintain. Then, patterns like "decorators", "faca
 object solutions were proposed by many developers. This gem is one of such solutions, but
 with a significant difference.
 
-`Zen` services are aimed to take care of *all* business logic in your application, no
+`Zen` services are aimed to take care of _all_ business logic in your application, no
 matter what it is aimed for, and how complicated it is. From simplest cases of managing
 single model, to the most complicated logic related with external requests, `Zen` services
 got you covered. They are highly extendable due to plugin-based approach, composable and
@@ -159,11 +158,11 @@ used in base `Zen::Service` class. Bellow you can see a list of plugins with som
 and examples that are shipped with the gem:
 
 - [`:status`](https://github.com/akuzko/zen-service/wiki/Plugins#status) - Adds `status` execution state
-property to the service, as well as helper methods and behavior to set it. `status` property is not
-bound to the "success" flag of execution state and can have any value depending on your needs. It
-is up to you to setup which statuses correspond to successful execution and which are not. Generated
-status helper methods allow to atomically and more explicitly assign both status and result at
-the same time:
+  property to the service, as well as helper methods and behavior to set it. `status` property is not
+  bound to the "success" flag of execution state and can have any value depending on your needs. It
+  is up to you to setup which statuses correspond to successful execution and which are not. Generated
+  status helper methods allow to atomically and more explicitly assign both status and result at
+  the same time:
 
 ```rb
 class Posts::Update < Zen::Service
@@ -195,7 +194,7 @@ Note that just like `success`, `failure`, or `result` methods, status helpers ac
 as result of yielded block.
 
 - [`:context`](https://github.com/akuzko/zen-service/wiki/Plugins#context) - Allows you to set an execution
-context for a block that will be available to any service that uses this plugin via `context` method.
+  context for a block that will be available to any service that uses this plugin via `context` method.
 
 ```rb
 # application_controller.rb
@@ -221,11 +220,11 @@ end
 ```
 
 - [`:policies`](https://github.com/akuzko/zen-service/wiki/Plugins#policies) - Allows you to define permission
-checks within a service that can be used in other services for checks and guard violations. Much like
-[pundit](https://github.com/elabs/pundit) Policies (hence the name), but more. Where pundit governs only
-authorization logic, `zen-service`'s "policy" services can have any denial reason you find appropriate, and declare
-logic for different denial reasons in single place. It also defines `#execute!` method that will result in
-hash with all permission checks.
+  checks within a service that can be used in other services for checks and guard violations. Much like
+  [pundit](https://github.com/elabs/pundit) Policies (hence the name), but more. Where pundit governs only
+  authorization logic, `zen-service`'s "policy" services can have any denial reason you find appropriate, and declare
+  logic for different denial reasons in single place. It also defines `#execute!` method that will result in
+  hash with all permission checks.
 
 ```rb
 class Posts::Policies < Zen::Service
@@ -261,13 +260,13 @@ policies.execute.result     # => {'publish' => true, 'delete' => false}
 ```
 
 - [`:assertions`](https://github.com/akuzko/zen-service/wiki/Plugins#assertions) - Provides `assert` method that
-can be used for different logic checks during service execution.
+  can be used for different logic checks during service execution.
 
 - [`:execution_cache`](https://github.com/akuzko/zen-service/wiki/Plugins#execution_cache) - Simple plugin that will prevent
-re-execution of service if it already has been executed, and will immediately return result.
+  re-execution of service if it already has been executed, and will immediately return result.
 
 - [`:rescue`](https://github.com/akuzko/zen-service/wiki/Plugins#rescue) - Provides `:rescue` execution option.
-If set to `true`, any error occurred during service execution will not be raised outside.
+  If set to `true`, any error occurred during service execution will not be raised outside.
 
 ## Development
 
@@ -281,4 +280,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/akuzko
 ## License
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-
