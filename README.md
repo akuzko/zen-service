@@ -27,10 +27,8 @@ The very basic usage of `Zen` services can be shown with following example:
 ```rb
 # app/services/todos/update.rb
 module Todos
-  class Update < Zen::Service
+  class Update < ApplicationService # base class for app services, inherits from Zen::Service
     attributes :todo, :params
-
-    delegate :errors, to: :todo
 
     def call
       if todo.update(params)
@@ -47,7 +45,7 @@ class TodosController < ApplicationController
   def update
     case Todos::Update.call(todo, params: todo_params)
     in [:ok, todo] then render json: Todos::Show.call(todo)
-    in [:error, errors] then render json: service.errors, status: :unprocessable_content
+    in [:error, errors] then render json: errors, status: :unprocessable_content
     end
   end
 end
@@ -99,8 +97,8 @@ simplicity.
 
 However, `zen-service` still provides a couple of helpfull plugins out-of-the-box:
 
-- `:persisted_result` - provides `result` method that returns value of the latest `call`
-  method call. Also provides `called?` helper method.
+- `:persisted_result` - provides `#result` method that returns value of the latest `#call`
+  method call. Also provides `#called?` helper method.
 
 - `:result_yielding` - can be used in junction with nested service calls to result with
   block-provided value instead of nested service `call` return value. For example:
