@@ -95,12 +95,37 @@ Read full version on [wiki](https://github.com/akuzko/zen-service/wiki/Plugins).
 
 `zen-service` is built with extensions in mind. Even core functionality is organized in plugins that are
 used in base `Zen::Service` class. Version 2.0.0 drops majority of built-in plugins for sake of
-simplicity. For an example, bellow you can see example of plugin that transforms resulting objects
+simplicity.
+
+However, `zen-service` still provides a couple of helpfull plugins out-of-the-box:
+
+- `:persisted_result` - provides `result` method that returns value of the latest `call`
+  method call. Also provides `called?` helper method.
+
+- `:result_yielding` - can be used in junction with nested service calls to result with
+  block-provided value instead of nested service `call` return value. For example:
+
+  ```rb
+    def call
+      logger.call do # logger uses `:result_yielding` plugin
+        todo.update!(params)
+        [:ok, todo]
+      rescue ActiveRecord::RecordInvalid
+        [:error, todo.errors.messages]
+      end
+    end
+  ```
+
+Bellow you can see sample implementation of a plugin that transforms resulting objects
 to camel-case notation (relying on ActiveSupport's core extensions)
 
 ```rb
 module CamelizeResult
   extend Zen::Service::Plugin
+
+  def self.used(service_class)
+    service_class.prepend(Extension)
+  end
 
   def self.camelize(obj)
     case obj
@@ -110,10 +135,10 @@ module CamelizeResult
     end
   end
 
-  private
-
-  def call
-    CamelizeResult.camelize(super)
+  module Extension
+    def call
+      CamelizeResult.camelize(super)
+    end
   end
 end
 ```

@@ -28,5 +28,6 @@ module Zen
   require_relative "plugins/pluggable"
   require_relative "plugins/callable"
   require_relative "plugins/attributes"
-  require_relative "plugins/executable"
+  require_relative "plugins/persisted_result"
+  require_relative "plugins/result_yielding"
 end
