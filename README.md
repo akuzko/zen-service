@@ -98,7 +98,9 @@ simplicity.
 However, `zen-service` still provides a couple of helpfull plugins out-of-the-box:
 
 - `:persisted_result` - provides `#result` method that returns value of the latest `#call`
-  method call. Also provides `#called?` helper method.
+  method call. Also provides `#called?` helper method. Supports `call_unless_called` option.
+  When set to `true`, calling `service.result` method will call `#call` method if it has
+  not yet been called. Default value is `false`.
 
 - `:result_yielding` - can be used in junction with nested service calls to result with
   block-provided value instead of nested service `call` return value. For example:
