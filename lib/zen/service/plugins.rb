@@ -8,15 +8,19 @@ module Zen
       plugins[name] || raise("extension `#{name}` is not registered")
     end
 
-    def self.register(name, extension)
-      raise(ArgumentError, "extension `#{name}` is already registered") if plugins.key?(name)
-
-      plugins[name] =
-        if (old_name = plugins.key(extension))
-          plugins.delete(old_name)
-        else
-          extension
+    def self.register(name_or_hash, extension)
+      if name_or_hash.is_a?(Hash)
+        name_or_hash.each do |name, ext|
+          register(name, ext)
         end
+      else
+        plugins[name_or_hash] =
+          if (old_name = plugins.key(extension))
+            plugins.delete(old_name)
+          else
+            extension
+          end
+      end
     end
 
     def self.plugins

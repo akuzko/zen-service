@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "ostruct"
-
 module Zen
   module Service::Plugins
     module ResultYielding
