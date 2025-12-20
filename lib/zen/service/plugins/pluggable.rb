@@ -11,7 +11,7 @@ module Zen
         defaults = extension.config[:default_options]
         opts = defaults.merge(opts) unless defaults.nil?
 
-        if using?(name)
+        if service_plugins.key?(name)
           extension.configure(self, **opts, &block) if extension.respond_to?(:configure)
           return extension
         end
@@ -23,8 +23,16 @@ module Zen
         plugins.key?(name)
       end
 
+      def service_plugins
+        @service_plugins ||= {}
+      end
+
       def plugins
-        @plugins ||= {}
+        ancestors
+          .select { |klass| klass <= ::Zen::Service }
+          .flat_map(&:service_plugins)
+          .reverse
+          .reduce(&:merge)
       end
       alias extensions plugins
 
@@ -37,7 +45,7 @@ module Zen
         extension.used(self, **opts, &block) if extension.respond_to?(:used)
         extension.configure(self, **opts, &block) if extension.respond_to?(:configure)
 
-        plugins[name] = Reflection.new(extension, opts.merge(block:))
+        service_plugins[name] = Reflection.new(extension, opts.merge(block:))
 
         extension
       end

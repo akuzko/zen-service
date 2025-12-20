@@ -20,4 +20,26 @@ RSpec.describe Zen::Service::Plugins::PersistedResult do
     expect(service.result).to eq(4)
     expect(service).to be_called
   end
+
+  describe ":call_unless_called option" do
+    context "when set to true" do
+      def_service do
+        use :persisted_result, call_unless_called: true
+
+        attributes :foo
+
+        def call
+          foo * 3
+        end
+      end
+
+      let(:service) { build_service(foo: 3) }
+
+      it "calls service when #result is accessed before #call" do
+        expect(service).not_to be_called
+        expect(service.result).to eq(9)
+        expect(service).to be_called
+      end
+    end
+  end
 end
