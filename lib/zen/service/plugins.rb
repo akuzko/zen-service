@@ -3,9 +3,10 @@
 module Zen
   module Service::Plugins
     def self.fetch(name)
-      require("zen/service/plugins/#{name}") unless plugins.key?(name)
+      raise("extension `#{name}` is not registered") unless plugins.key?(name)
 
-      plugins[name] || raise("extension `#{name}` is not registered")
+      extension = plugins[name]
+      extension.is_a?(String) ? constantize(extension) : extension
     end
 
     def self.register(name_or_hash, extension = nil)
@@ -27,6 +28,12 @@ module Zen
 
     def self.plugins
       @plugins ||= {}
+    end
+
+    def self.constantize(string)
+      return string.constantize if string.respond_to?(:constantize)
+
+      string.sub(/^::/, "").split("::").inject(Object) { |obj, const| obj.const_get(const) }
     end
   end
 
