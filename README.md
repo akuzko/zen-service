@@ -162,6 +162,18 @@ end
 Todos::Show[todo] # => { id: 1, isCompleted: true }
 ```
 
+**Note**: Custom plugins need to be registered before they can be used. Plugins that extend
+`Zen::Service::Plugin` are automatically registered when the module is loaded. Alternatively,
+you can register plugins manually:
+
+```rb
+# Register a plugin module
+Zen::Service::Plugins.register(:my_plugin, MyPlugin)
+
+# Register by class name (useful when autoload isn't available yet, e.g., during Rails boot)
+Zen::Service::Plugins.register(:my_plugin, "MyApp::Services::MyPlugin")
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests.
