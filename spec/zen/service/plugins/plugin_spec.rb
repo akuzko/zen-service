@@ -63,4 +63,27 @@ RSpec.describe Zen::Service::Plugins::Plugin do
       expect(build_service.foo).to eq(6)
     end
   end
+
+  describe "plugin reflection with block" do
+    def_service do
+      use :custom_name, foo: 8 do
+        def baz_method
+          :baz_value
+        end
+      end
+    end
+
+    it "stores block separately from options" do
+      reflection = service_class.plugins[:custom_name]
+
+      expect(reflection.options).to eq(foo: 8)
+      expect(reflection.options).not_to have_key(:block)
+      expect(reflection.block).to be_a(Proc)
+    end
+
+    it "evaluates block in service class context" do
+      expect(build_service).to respond_to(:baz_method)
+      expect(build_service.baz_method).to eq(:baz_value)
+    end
+  end
 end

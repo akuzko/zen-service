@@ -116,6 +116,26 @@ However, `zen-service` still provides a couple of helpfull plugins out-of-the-bo
     end
   ```
 
+#### Plugin Lifecycle
+
+When using a plugin on a service class:
+
+- If the plugin is used for the first time, both `used` and `configure` callbacks are invoked
+- If the plugin was already used by an ancestor class, only the `configure` callback is invoked,
+  allowing reconfiguration without re-including the module
+
+This design allows child classes to customize plugin behavior inherited from parent classes:
+
+```rb
+class BaseService < Zen::Service
+  use :persisted_result, call_unless_called: false
+end
+
+class ChildService < BaseService
+  use :persisted_result, call_unless_called: true  # Only reconfigures, doesn't re-include
+end
+```
+
 Bellow you can see sample implementation of a plugin that transforms resulting objects
 to camel-case notation (relying on ActiveSupport's core extensions)
 

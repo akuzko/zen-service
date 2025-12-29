@@ -3,7 +3,7 @@
 module Zen
   module Service::Plugins
     module Pluggable
-      Reflection = Struct.new(:extension, :options)
+      Reflection = Struct.new(:extension, :options, :block)
 
       def use(name, **opts, &block)
         extension = Service::Plugins.fetch(name)
@@ -11,7 +11,7 @@ module Zen
         defaults = extension.config[:default_options]
         opts = defaults.merge(opts) unless defaults.nil?
 
-        if service_plugins.key?(name)
+        if plugins.key?(name)
           extension.configure(self, **opts, &block) if extension.respond_to?(:configure)
           return extension
         end
@@ -45,7 +45,7 @@ module Zen
         extension.used(self, **opts, &block) if extension.respond_to?(:used)
         extension.configure(self, **opts, &block) if extension.respond_to?(:configure)
 
-        service_plugins[name] = Reflection.new(extension, opts.merge(block:))
+        service_plugins[name] = Reflection.new(extension, opts, block)
 
         extension
       end

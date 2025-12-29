@@ -1,5 +1,20 @@
 # frozen_string_literal: true
 
+module TestInheritancePlugin
+  extend Zen::Service::Plugins::Plugin
+
+  register_as :test_inheritance
+
+  def self.used(service_class, **)
+    service_class.used_count = (service_class.used_count || 0) + 1
+  end
+
+  def self.configure(service_class, **opts)
+    service_class.configure_count = (service_class.configure_count || 0) + 1
+    service_class.last_config_opts = opts
+  end
+end
+
 RSpec.describe Zen::Service do
   it "has a version number" do
     expect(Zen::Service::VERSION).not_to be nil
@@ -90,6 +105,57 @@ RSpec.describe Zen::Service do
     specify ".[]" do
       result = service_class[:foo]
       expect(result).to eq(:foo)
+    end
+  end
+
+  describe "plugin usage and inheritance" do
+    let(:base_class) do
+      Class.new(Zen::Service) do
+        class << self
+          attr_accessor :used_count, :configure_count, :last_config_opts
+        end
+
+        use :test_inheritance, base: true
+      end
+    end
+
+    let(:inherited_class) do
+      Class.new(base_class) do
+        use :test_inheritance, inherited: true
+      end
+    end
+
+    it "calls used only once on the base class" do
+      expect(base_class.used_count).to eq(1)
+      expect(inherited_class.used_count).to be_nil
+    end
+
+    it "calls configure on both base and inherited classes" do
+      expect(base_class.configure_count).to eq(1)
+      expect(inherited_class.configure_count).to eq(1)
+    end
+
+    it "passes different options to configure in inherited class" do
+      expect(base_class.last_config_opts).to eq(base: true)
+      expect(inherited_class.last_config_opts).to eq(inherited: true)
+    end
+  end
+
+  describe "plugin reflection" do
+    def_service do
+      use :persisted_result, call_unless_called: true do
+        def custom
+          :custom
+        end
+      end
+    end
+
+    it "stores block separately from options in reflection" do
+      reflection = service_class.plugins[:persisted_result]
+
+      expect(reflection.options).to eq(call_unless_called: true)
+      expect(reflection.options).not_to have_key(:block)
+      expect(reflection.block).to be_a(Proc)
     end
   end
 end
