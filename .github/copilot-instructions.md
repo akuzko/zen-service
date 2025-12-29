@@ -12,7 +12,8 @@ The entire gem is built around `Zen::Service::Plugins` - a dynamic plugin regist
 
 - Plugins auto-register using `extend Zen::Service::Plugins::Plugin` (converts module name to snake_case key)
 - Services use plugins via `use :plugin_name, **options`
-- Plugin lifecycle: `used(service_class)` → includes module → `configure(service_class)` if defined
+- Plugin lifecycle (first use): `used(service_class)` → includes module → `configure(service_class)` if defined
+- Plugin reconfiguration (ancestor already used): only `configure(service_class)` is called, module not re-included
 - See [plugin.rb](lib/zen/service/plugins/plugin.rb) for the DSL: `register_as`, `default_options`, `service_extension`
 
 ### Core Plugins Architecture
@@ -97,6 +98,13 @@ end
 - Use `default_options foo: 5` in plugin definition
 - Access via `self.class.plugins[:plugin_name].options[:foo]`
 - Options merge with defaults when using plugin
+- Blocks passed to `use` are stored in `reflection.block`, separate from options (not polluting options hash)
+
+### Plugin Inheritance & Reconfiguration
+
+- When a child class uses a plugin already used by an ancestor, only `configure` callback is invoked (not `used`)
+- This allows child classes to reconfigure plugin behavior without re-including the module
+- Example: `BaseService` uses `:persisted_result` with default options, `ChildService` can reconfigure with different options
 
 ### Inheritance Behavior
 
