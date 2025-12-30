@@ -3,6 +3,8 @@
 module TestInheritancePlugin
   extend Zen::Service::Plugins::Plugin
 
+  default_options some_option: false
+
   register_as :test_inheritance
 
   def self.used(service_class, **)
@@ -121,7 +123,7 @@ RSpec.describe Zen::Service do
 
     let(:inherited_class) do
       Class.new(base_class) do
-        use :test_inheritance, inherited: true
+        use :test_inheritance, inherited: true, some_option: true
       end
     end
 
@@ -136,8 +138,8 @@ RSpec.describe Zen::Service do
     end
 
     it "passes different options to configure in inherited class" do
-      expect(base_class.last_config_opts).to eq(base: true)
-      expect(inherited_class.last_config_opts).to eq(inherited: true)
+      expect(base_class.last_config_opts).to eq(base: true, some_option: false)
+      expect(inherited_class.last_config_opts).to eq(inherited: true, some_option: true)
     end
   end
 
