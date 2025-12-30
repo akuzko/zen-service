@@ -13,6 +13,7 @@ module Zen
 
         if plugins.key?(name)
           extension.configure(self, **opts, &block) if extension.respond_to?(:configure)
+          service_plugins[name] = Reflection.new(extension, opts, block)
           return extension
         end
 
