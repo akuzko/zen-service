@@ -5,13 +5,13 @@ module Zen
     module Callable
       extend Plugin
 
-      def call
+      def call(&)
         # No-op by default
       end
 
       module ClassMethods
-        def call(...)
-          new(...).call
+        def call(*attrs, &block)
+          new(*attrs).call(&block)
         end
         alias [] call
       end

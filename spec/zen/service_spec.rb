@@ -92,21 +92,33 @@ RSpec.describe Zen::Service do
 
   describe ".call and .[] helpers" do
     def_service do
-      attributes :arg
+      attributes :foo, :bar
 
       def call
-        arg
+        block_given? ? yield(foo, bar) : foo + bar
       end
     end
 
     specify ".call" do
-      result = service_class.(:foo)
-      expect(result).to eq(:foo)
+      result = service_class.(2, 3)
+      expect(result).to eq(5)
     end
 
     specify ".[]" do
-      result = service_class[:foo]
-      expect(result).to eq(:foo)
+      result = service_class[2, 3]
+      expect(result).to eq(5)
+    end
+
+    context "with a block" do
+      specify ".call" do
+        result = service_class.(2, 3) { |f, b| f * b }
+        expect(result).to eq(6)
+      end
+
+      specify ".[]" do
+        result = service_class[2, 3] { |f, b| f * b }
+        expect(result).to eq(6)
+      end
     end
   end
 
