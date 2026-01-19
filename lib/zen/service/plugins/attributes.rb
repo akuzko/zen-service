@@ -13,7 +13,7 @@ module Zen
 
       def initialize_clone(*)
         super
-        @attributes = @attributes.dup unless @attributes.nil?
+        @attributes = @attributes.dup
       end
 
       def with_attributes(attributes)
@@ -84,7 +84,7 @@ module Zen
         end
 
         def from(service)
-          new(service.send(:attributes))
+          new(**service.send(:attributes))
         end
       end
     end
