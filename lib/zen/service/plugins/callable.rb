@@ -10,8 +10,8 @@ module Zen
       end
 
       module ClassMethods
-        def call(*attrs, &block)
-          new(*attrs).call(&block)
+        def call(*args, **kwargs, &block)
+          new(*args, **kwargs).call(&block)
         end
         alias [] call
       end

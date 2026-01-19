@@ -152,6 +152,18 @@ RSpec.describe Zen::Service do
       expect(result).to eq(5)
     end
 
+    context "when passing some attributes as named parameters" do
+      specify ".call" do
+        result = service_class.call(4, bar: 5)
+        expect(result).to eq(9)
+      end
+
+      specify ".[]" do
+        result = service_class[4, bar: 5]
+        expect(result).to eq(9)
+      end
+    end
+
     context "with a block" do
       specify ".call" do
         result = service_class.(2, 3) { |f, b| f * b }
