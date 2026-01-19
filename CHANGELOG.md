@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.3] - 2026-01-19
+
+### Fixed
+
+- Fix block passing when calling service using `.call` and `.[]` class methods
+
+### Changed
+
+- Add CI workflow with GitHub Actions
+- Add SimpleCov integration with 100% test coverage (line and branch coverage)
+- Update README with comprehensive documentation, shield badges, and improved examples
+
 ## [2.2.2] - 2025-12-30
 
 ### Fixed
@@ -66,6 +78,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Manual plugin registration via `Zen::Service::Plugins.register`
 
 ### Changed
+
+3]: https://github.com/akuzko/zen-service/compare/v2.2.2...v2.2.3
+[2.2.
 
 - Simplified service object pattern focusing on essential functionality
 - Improved plugin DSL with `register_as`, `default_options`, and `service_extension`
