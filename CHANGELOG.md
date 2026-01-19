@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.4] - 2026-01-19
+
+### Fixed
+
+- Fix using named attributes in `.call` and `.[]` class-level call helpers
+
 ## [2.2.3] - 2026-01-19
 
 ### Fixed
@@ -87,3 +93,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Most built-in plugins from v1.x for simplicity
 - Removed legacy plugin APIs
+
+[2.2.4]: https://github.com/akuzko/zen-service/compare/v2.2.3...v2.2.4
+[2.2.3]: https://github.com/akuzko/zen-service/compare/v2.2.2...v2.2.3
+[2.2.2]: https://github.com/akuzko/zen-service/compare/v2.2.1...v2.2.2
+[2.2.1]: https://github.com/akuzko/zen-service/compare/v2.2.0...v2.2.1
+[2.2.0]: https://github.com/akuzko/zen-service/compare/v2.1.0...v2.2.0
+[2.1.0]: https://github.com/akuzko/zen-service/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/akuzko/zen-service/releases/tag/v2.0.0
