@@ -8,6 +8,7 @@
 /spec/reports/
 /tmp/
 
+.github/workflows/README.md
 .rspec_status
 .ruby-version
 .ruby-gemset

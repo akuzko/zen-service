@@ -1,5 +1,15 @@
 # frozen_string_literal: true
 
+require "simplecov"
+require "simplecov-cobertura"
+
+SimpleCov.start do
+  add_filter "/spec/"
+  enable_coverage :branch
+
+  SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter if ENV["CI"]
+end
+
 require "zen/service"
 require "pry"
 require "rspec/its"
