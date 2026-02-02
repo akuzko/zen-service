@@ -381,6 +381,76 @@ module MyPlugin
 end
 ```
 
+## Comparison/Benchmark
+
+`zen-service` is designed to be both flexible and performant. Among similar service object gems,
+[verbalize](https://github.com/taylorzr/verbalize) is known for being the fastest implementation.
+The following benchmark compares `zen-service` with `verbalize` using a simple addition service:
+
+```ruby
+require 'benchmark/ips'
+require 'verbalize'
+require 'zen/service'
+
+class VerbalizeAdd
+  include Verbalize::Action
+
+  input :a, :b
+
+  def call
+    a + b
+  end
+end
+
+class ZenAdd < Zen::Service
+  attributes :a, :b
+
+  def call
+    a + b
+  end
+end
+
+class ZenInputsAdd < Zen::Service::Callable
+  use :inputs
+
+  inputs :a, :b
+
+  def call
+    a + b
+  end
+end
+
+Benchmark.ips do |x|
+  x.report('Verbalize       ') { VerbalizeAdd.call(a: 1, b: 2) }
+  x.report('Zen (attributes)') { ZenAdd.call(a: 1, b: 2) }
+  x.report('Zen (inputs)    ') { ZenInputsAdd.call(a: 1, b: 2) }
+  x.compare!
+end
+```
+
+**Results:**
+
+```
+Warming up --------------------------------------
+    Verbalize           66.313k i/100ms
+    Zen (attributes)    87.104k i/100ms
+    Zen (inputs)        62.857k i/100ms
+Calculating -------------------------------------
+    Verbalize           648.660k (± 2.4%) i/s    (1.54 μs/i) -      3.249M in   5.012220s
+    Zen (attributes)    848.953k (± 4.2%) i/s    (1.18 μs/i) -      4.268M in   5.037257s
+    Zen (inputs)        701.096k (± 3.1%) i/s    (1.43 μs/i) -      3.520M in   5.026014s
+
+Comparison:
+    Zen (attributes):   848952.8 i/s
+    Zen (inputs)    :   701095.7 i/s - 1.21x  slower
+    Verbalize       :   648660.4 i/s - 1.31x  slower
+```
+
+`zen-service` with the default `:attributes` plugin outperforms `verbalize` by ~31%, while the
+experimental `:inputs` plugin is ~8% faster than `verbalize`. These benchmarks demonstrate that
+`zen-service` provides excellent performance while offering superior extensibility through its
+plugin system.
+
 ## Testing
 
 The gem has 100% test coverage with both line and branch coverage. To run the test suite:
