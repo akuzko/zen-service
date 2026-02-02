@@ -150,9 +150,11 @@ class Logger < Zen::Service
 
   # Will result with value return by `yield` expression
   def call
+    start_time = Time.now
     Rails.logger.info("Starting operation")
-    result = yield
-    Rails.logger.info("Operation completed: #{result.inspect}")
+    yield
+    time_taken = (Time.now - start_time) * 1000
+    Rails.logger.info("Operation completed in #{time_taken.round} ms")
   end
 end
 
