@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-02-02
+
+### Added
+
+- Add `:inputs` plugin as an experimental alternative to `:attributes` for service initialization
+  - Provides keyword-only initialization with built-in runtime validation
+  - Supports per-input validation blocks with Ruby 3+ pattern matching
+  - Includes optional inputs with lazy-evaluated defaults
+  - Adds initialization blocks for computed attributes
+  - Designed for use with `Zen::Service::Callable` descendants
+- Add `Zen::Service::Callable` base class as service "blank slate"
+  - Inherits only `:callable` plugin without `:attributes`
+  - Enables alternative initialization strategies via plugins like `:inputs`
+- Add comprehensive benchmark comparison with `verbalize` gem in README
+  - Shows `zen-service` with `:attributes` is ~31% faster than `verbalize`
+  - Shows `:inputs` plugin is ~8% faster than `verbalize`
+
+### Changed
+
+- Update README with `:inputs` plugin documentation and usage examples
+- Update README with pattern matching validation examples
+- Improve documentation structure and clarity
+
 ## [2.2.4] - 2026-01-19
 
 ### Fixed
@@ -94,6 +117,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Most built-in plugins from v1.x for simplicity
 - Removed legacy plugin APIs
 
+[2.2.4]: https://github.com/akuzko/zen-service/compare/v2.2.3...v2.2.4
+[2.3.0]: https://github.com/akuzko/zen-service/compare/v2.2.4...v2.3.0
 [2.2.4]: https://github.com/akuzko/zen-service/compare/v2.2.3...v2.2.4
 [2.2.3]: https://github.com/akuzko/zen-service/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/akuzko/zen-service/compare/v2.2.1...v2.2.2
