@@ -170,6 +170,114 @@ class UpdateTodo < Zen::Service
 end
 ```
 
+#### `:inputs` (Experimental)
+
+Provides an alternative way to initialize services with keyword-only arguments and built-in runtime validation.
+
+**Key Features:**
+
+- Keyword-only initialization (no positional arguments)
+- Per-input validation blocks with Ruby 3+ pattern matching
+- Optional inputs with lazy-evaluated defaults
+- Initialization blocks for computed attributes
+
+**⚠️ Experimental Feature:** To avoid breaking changes, services using `:inputs` should inherit from
+`Zen::Service::Callable` instead of `Zen::Service`. The base `Zen::Service` class already includes the
+`:attributes` plugin, and these two plugins provide different initialization strategies.
+API of the plugin may be changed in future.
+
+```ruby
+# Base class for input-based services
+class ApplicationCallable < Zen::Service::Callable
+  use :inputs
+end
+
+# Service with input validation
+class CalculatePrice < ApplicationCallable
+  input(:quantity) { _1 => Integer }
+  input(:unit_price) { _1 => Numeric }
+  input(:discount, optional: true)
+
+  def call
+    total = quantity * unit_price
+    discount ? total * (1 - discount) : total
+  end
+end
+
+CalculatePrice.call(quantity: 10, unit_price: 5.0, discount: 0.1)
+# => 45.0
+
+CalculatePrice.call(quantity: "10", unit_price: 5.0)
+# => NoMatchingPatternError (Integer === "10" does not return true)
+```
+
+**Input Options:**
+
+- `optional: true` - Allow input to be omitted (defaults to `nil`)
+- `default: -> { value }` - Provide lazy-evaluated default value
+
+**Bulk Definition with Validation:**
+
+```ruby
+class ProcessCoordinates < ApplicationCallable
+  inputs(:x, :y) do |x_val, y_val|
+    x_val => Integer
+    y_val => Integer
+    raise ArgumentError, "coordinates out of bounds" if x_val.abs > 100 || y_val.abs > 100
+  end
+
+  def call
+    [x, y]
+  end
+end
+
+ProcessCoordinates.call(x: 10, y: 20) # => [10, 20]
+ProcessCoordinates.call(x: 150, y: 20) # => ArgumentError: coordinates out of bounds
+```
+
+**Default Values:**
+
+```ruby
+class CreateReport < ApplicationCallable
+  input :data
+  input :format, default: -> { :json }
+  input :timestamp, default: -> { Time.current }
+
+  def call
+    { data: data, format: format, timestamp: timestamp }
+  end
+end
+
+CreateReport.call(data: [1, 2, 3])
+# => { data: [1, 2, 3], format: :json, timestamp: 2026-02-02 10:30:00 UTC }
+```
+
+**Pattern Matching for Type Safety:**
+
+The primary use case for validation blocks is runtime type checking using Ruby's pattern matching:
+
+```ruby
+class UserRegistration < ApplicationCallable
+  input(:email) { _1 => String }
+  input(:age) { _1 => Integer if _1 >= 18 }
+  input(:role) { _1 => :admin | :user | :guest }
+
+  def call
+    # Your registration logic
+  end
+end
+
+# Valid calls
+UserRegistration.call(email: "user@example.com", age: 25, role: :user)
+
+# Pattern match failures
+UserRegistration.call(email: 123, age: 25, role: :user)
+# => NoMatchingPatternError
+
+UserRegistration.call(email: "user@example.com", age: 15, role: :user)
+# => NoMatchingPatternError
+```
+
 ### Creating Custom Plugins
 
 Creating custom plugins is straightforward. Below is an example of a plugin that transforms results to
