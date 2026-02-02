@@ -30,7 +30,7 @@ module Zen
 
       def plugins
         ancestors
-          .select { |klass| klass <= ::Zen::Service }
+          .select { |klass| klass <= ::Zen::Service || klass <= ::Zen::Service::Callable }
           .flat_map(&:service_plugins)
           .reverse
           .reduce(&:merge)
